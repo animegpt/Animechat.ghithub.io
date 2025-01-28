@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        #chat-box {
+            width: 80%;
+            height: 300px;
+            border: 1px solid #ccc;
+            margin: 20px auto;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+        .user-message {
+            text-align: right;
+            color: blue;
+        }
+        .bot-message {
+            text-align: left;
+            color: green;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>مرحبًا بكم في Anime Chat!</h1>
+    <div id="chat-box">
+        <!-- الرسائل ستظهر هنا -->
+    </div>
+    <input type="text" id="message-input" placeholder="اكتب رسالتك هنا...">
+    <button onclick="sendMessage()">إرسال</button>
+
+    <script>
+        const apiKey = 'your-openai-api-key'; // استبدل بمفتاح API الخاص بك
+        const chatBox = document.getElementById('chat-box');
+        const messageInput = document.getElementById('message-input');
+
+        async function sendMessage() {
+            const userMessage = messageInput.value;
+            if (!userMessage) return;
+
+            // عرض رسالة المستخدم
+            chatBox.innerHTML += `<div class="user-message">أنت: ${userMessage}</div>`;
+
+            // إرسال الرسالة إلى OpenAI API
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [{ role: "user", content: userMessage }]
+                })
+            });
+
+            const data = await response.json();
+            const botMessage = data.choices[0].message.content;
+
+            // عرض رد الذكاء الاصطناعي
+            chatBox.innerHTML += `<div class="bot-message">البوت: ${botMessage}</div>`;
+
+            // مسح حقل الإدخال
+            messageInput.value = '';
+        }
+    </script>
+</body>
+</html>
