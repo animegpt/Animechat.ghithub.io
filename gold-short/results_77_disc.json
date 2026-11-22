@@ -1,0 +1,52 @@
+{
+ "base": {
+  "sharpe": -2.639,
+  "maxdd_pct": -363.86,
+  "total_pct": -360.72
+ },
+ "sonic_only": {
+  "sharpe": 0.459,
+  "maxdd_pct": -13.28,
+  "total_pct": 41.61
+ },
+ "overnight_only": {
+  "sharpe": -4.078,
+  "maxdd_pct": -403.89,
+  "total_pct": -402.33
+ },
+ "sonic_trades": 1249,
+ "STREAK3": {
+  "with": {
+   "sharpe": -2.155,
+   "maxdd_pct": -342.9,
+   "total_pct": -340.66
+  },
+  "hedge_alone": {
+   "sharpe": 0.239,
+   "maxdd_pct": -10.29,
+   "total_pct": 20.06
+  },
+  "on_share": 0.111,
+  "dd_reduction_pct": 5.8,
+  "profit_change_pct": -5.6,
+  "corr_hedge_base": -0.032,
+  "pass": true
+ },
+ "DD5R": {
+  "with": {
+   "sharpe": -2.058,
+   "maxdd_pct": -383.23,
+   "total_pct": -375.85
+  },
+  "hedge_alone": {
+   "sharpe": -0.121,
+   "maxdd_pct": -39.15,
+   "total_pct": -15.13
+  },
+  "on_share": 0.212,
+  "dd_reduction_pct": -5.3,
+  "profit_change_pct": 4.2,
+  "corr_hedge_base": -0.03,
+  "pass": true
+ }
+}

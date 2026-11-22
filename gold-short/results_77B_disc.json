@@ -1,0 +1,29 @@
+{
+ "base_sonic": {
+  "sharpe": 0.459,
+  "maxdd_pct": -13.28,
+  "total_pct": 41.61
+ },
+ "STREAK3": {
+  "with": {
+   "sharpe": 0.506,
+   "maxdd_pct": -16.19,
+   "total_pct": 61.67
+  },
+  "dd_reduction_pct": -21.9,
+  "profit_change_pct": 48.2,
+  "sharpe_gain": 0.047,
+  "pass": true
+ },
+ "DD5R": {
+  "with": {
+   "sharpe": 0.174,
+   "maxdd_pct": -32.43,
+   "total_pct": 26.48
+  },
+  "dd_reduction_pct": -144.2,
+  "profit_change_pct": -36.4,
+  "sharpe_gain": -0.285,
+  "pass": false
+ }
+}

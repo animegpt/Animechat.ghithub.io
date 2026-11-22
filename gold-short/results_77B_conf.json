@@ -1,0 +1,24 @@
+{
+ "base_sonic": {
+  "sharpe": 0.385,
+  "maxdd_pct": -13.09,
+  "total_pct": 25.35
+ },
+ "STREAK3": {
+  "with": {
+   "sharpe": 0.253,
+   "maxdd_pct": -20.66,
+   "total_pct": 18.29
+  },
+  "hedge_alone": {
+   "sharpe": -0.223,
+   "maxdd_pct": -13.47,
+   "total_pct": -7.06
+  },
+  "on_share": 0.126,
+  "dd_reduction_pct": -57.8,
+  "profit_change_pct": -27.9,
+  "sharpe_gain": -0.132,
+  "pass": false
+ }
+}
