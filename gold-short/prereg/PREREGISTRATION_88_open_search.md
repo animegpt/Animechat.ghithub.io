@@ -82,3 +82,9 @@ Written BEFORE any number of this search was computed.
 - Then an independent audit agent, then one vault opening.
 - **Deliverables if something passes:** simple Arabic description of the rule, period results, correlation with Sonic/Overnight, Pine and MQL5 (Magic 770301).
 - **If nothing beats THRESHOLD:** report the top 5, their distance to THRESHOLD, and what was learned.
+
+## Amendment A (before the real run; only a 1,000-rule timing test on a NULL target had been run)
+- **The flaw:** the null "best fitness" could be undefined (-99) if a null run finds no rule with net B > 0 and net C > 0. That would make any eligible real rule "beat" the threshold.
+- **The fix:** THRESHOLD = 95th percentile of the 16 null maxima of the RAW day-t of net B over ALL evaluated rules (no eligibility filter).
+  - This is at least as high as the eligible-only maximum, so it is conservative.
+  - The real winner must still be eligible (B > 0, C > 0) AND have t > THRESHOLD.
