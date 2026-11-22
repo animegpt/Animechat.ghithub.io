@@ -90,7 +90,8 @@ def macro(X, L=5, hold=20, mode="both"):
     return X.day_cands(ks, [3.0] * len(ks), None, ex)
 
 
-def fix(X, ent=(14, 0), ext=(15, 5), days=(0, 1, 2, 3, 4)):
+def fix(X, ent=(13, 0), ext=(14, 0), days=(0, 1, 2, 3, 4)):
+    """Amendment A: bar START times (London). Bar 13:00 closes 14:00 = entry; bar 14:00 closes 15:00 = exit."""
     M = X.M
     if not hasattr(X, "lon"):
         X.lon = M.idx.tz_convert("Europe/London").tz_localize(None)
@@ -121,7 +122,7 @@ def sonic_short(X, n=200, slope=20, mode="trend", filt=True):
     short_ = dn & touch & (c < el) & (np.r_[c[0], c[:-1]] >= np.r_[el[0], el[:-1]])
     hh10 = pd.Series(h).rolling(10).max().values
     # daily filter from last COMPLETED daily bar (end = day 15:30 NY)
-    dend = (pd.DatetimeIndex(X.days) - pd.Timedelta(days=0)).tz_localize(None) + pd.Timedelta(hours=15, minutes=30)
+    dend = (pd.DatetimeIndex(X.days) - pd.Timedelta(days=0)).tz_localize(None) + (pd.Timedelta(hours=14) if BARS == "1h" else pd.Timedelta(hours=15, minutes=30))
     dend = dend.tz_localize("America/New_York", ambiguous="NaT", nonexistent="shift_forward").tz_convert("UTC")
     s = sma(X.C, n); sl = s - np.r_[np.full(slope, np.nan), s[:-slope]]
     okd = (X.C < s) & ((sl < 0) if mode == "trend" else True)

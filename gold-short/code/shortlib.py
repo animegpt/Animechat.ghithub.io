@@ -30,13 +30,18 @@ def _parse(path, t0):
     return df[df.v > 0]
 
 
+BARS = os.environ.get("BARS", "1h")      # Amendment A: hourly bars (1-minute endpoint rate-limited)
+
+
 def load_minutes():
-    dev = f"{GDATA}/xau_1m_dev.parquet"; vlt = f"{GDATA}/xau_1m_vault.parquet"
+    tag = "1h" if BARS == "1h" else "1m"
+    dev = f"{GDATA}/xau_{tag}_dev.parquet"; vlt = f"{GDATA}/xau_{tag}_vault.parquet"
     if not os.path.exists(dev):
-        d = f"{GDATA}/raw/cache_XAUUSD"; out = []
+        d = f"{GDATA}/raw/cache_XAUUSD" + ("_h" if tag == "1h" else ""); out = []
         for f in sorted(os.listdir(d)):
             if os.path.getsize(f"{d}/{f}") == 0: continue
-            out.append(_parse(f"{d}/{f}", pd.Timestamp(f[:10], tz="UTC")))
+            t0 = pd.Timestamp((f[:7] + "-01") if tag == "1h" else f[:10], tz="UTC")
+            out.append(_parse(f"{d}/{f}", t0))
         df = pd.concat(out).sort_index(); df = df[~df.index.duplicated()]
         df[df.index < VAULT_START].to_parquet(dev); df[df.index >= VAULT_START].to_parquet(vlt)
     df = pd.read_parquet(dev)
@@ -63,19 +68,22 @@ class Market:
         df = load_minutes() if df is None else df
         self.m = df; self.idx = df.index
         self.o, self.h, self.l, self.c = (df[k].values.astype(np.float64) for k in "ohlc")
-        end = self.idx + pd.Timedelta(minutes=1)              # fills happen at minute CLOSE
+        self.step = pd.Timedelta(hours=1) if BARS == "1h" else pd.Timedelta(minutes=1)
+        end = self.idx + self.step                            # fills happen at bar CLOSE
         self.side_cost_frac = 0.5 * SPREAD_USD * cost_mult(end) + 0.0   # USD; divided by price at use
         ny = self.idx.tz_convert("America/New_York")
         self.ny = ny
-        key = (ny.tz_localize(None) + pd.Timedelta(hours=8, minutes=30)).normalize()
+        hourly = BARS == "1h"
+        off = pd.Timedelta(hours=10) if hourly else pd.Timedelta(hours=8, minutes=30)   # day ends 14:00 NY (hourly) / 15:30 NY
+        key = (ny.tz_localize(None) + off).normalize()
         g = pd.DataFrame({"o": self.o, "h": self.h, "l": self.l, "c": self.c, "k": key, "pos": np.arange(len(df))})
         d = g.groupby("k").agg(o=("o", "first"), h=("h", "max"), l=("l", "min"), c=("c", "last"), n=("o", "size"),
                                last=("pos", "last"))
-        d = d[d.n >= 600].copy()
+        d = d[d.n >= (15 if hourly else 600)].copy()
         # entry minute: first minute starting >= 15:31 NY on calendar date d, within 30 minutes
         nyl = ny.tz_localize(None)
         mins = nyl.hour * 60 + nyl.minute
-        cand = np.flatnonzero((mins >= 931) & (mins <= 960))
+        cand = np.flatnonzero((mins == 840) if hourly else ((mins >= 931) & (mins <= 960)))   # bar starting 14:00 NY closes 15:00
         cdate = nyl[cand].normalize()
         first = pd.Series(cand, index=cdate).groupby(level=0).first()
         d["entry"] = first.reindex(d.index).values
