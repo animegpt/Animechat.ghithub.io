@@ -3,7 +3,7 @@
 //| FORWARD TEST ONLY (pre-registration #83).                        |
 //| DC overshoot fade on XAUUSD M1, rules = research #58 variant B:  |
 //| theta 0.2%, fade at 2 theta overshoot, catastrophe SL 3 theta,   |
-//| exit at the next DC / 24h / 21:45 UTC.                           |
+//| exit at the next DC / 24h / 16:45 New York (before rollover).    |
 //| Standalone: Magic 770201, never touches other positions.         |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
@@ -17,9 +17,7 @@
 #define DC_OVERSHOOT  2.0       // fade when price is 2 theta beyond the DC price
 #define DC_STOPK      3.0       // catastrophe stop distance = 3 theta from the fill
 #define DC_MAXHOLD    1440      // minutes (24h)
-#define EOD_UTC_MIN   1305      // 21:45 UTC force close
-#define NOENTRY_FROM  1290      // 21:30 UTC ...
-#define NOENTRY_TO    1380      // ... until 23:00 UTC no new entries
+#define EOD_NY_MIN    1005      // 16:45 New York force close (21:45 UTC winter / 20:45 UTC summer), before the 17:00 NY rollover
 
 input group "Risk"
 input double InpRiskPct     = 0.25;   // Risk per trade, % equity, on the 3-theta stop
@@ -52,7 +50,7 @@ double   gExitSigPx  = 0.0;
 ulong    pendClose[];
 
 //==================== time helpers ====================
-datetime ToUTC(datetime server) { return server - (datetime)(InpServerUTC * 3600); }
+datetime ToUTC(datetime server) { return (datetime)((long)server - (long)InpServerUTC * 3600); }
 
 datetime NthSundayUTC(int year, int mon, int nth, int hourUTC)
   {
@@ -61,7 +59,7 @@ datetime NthSundayUTC(int year, int mon, int nth, int hourUTC)
    datetime first = StructToTime(d);
    MqlDateTime f; TimeToStruct(first, f);
    int add = (7 - f.day_of_week) % 7;               // days to the first Sunday
-   return first + (datetime)((add + 7 * (nth - 1)) * 86400 + hourUTC * 3600);
+   return (datetime)((long)first + (long)(add + 7 * (nth - 1)) * 86400 + (long)hourUTC * 3600);
   }
 
 int NYOffset(datetime utc)                           // -4 (EDT) or -5 (EST)
@@ -72,15 +70,17 @@ int NYOffset(datetime utc)                           // -4 (EDT) or -5 (EST)
    return (utc >= a && utc < b) ? -4 : -5;
   }
 
+datetime ToNY(datetime utc) { return (datetime)((long)utc + (long)NYOffset(utc) * 3600); }
+
 int NYHour(datetime utc)
   {
-   MqlDateTime t; TimeToStruct(utc + (datetime)(NYOffset(utc) * 3600), t);
+   MqlDateTime t; TimeToStruct(ToNY(utc), t);
    return t.hour;
   }
 
-int UTCMinuteOfDay(datetime utc)
+int NYMinuteOfDay(datetime utc)
   {
-   MqlDateTime t; TimeToStruct(utc, t);
+   MqlDateTime t; TimeToStruct(ToNY(utc), t);
    return t.hour * 60 + t.min;
   }
 
@@ -201,7 +201,11 @@ void FinishTrade()
            }
         }
      }
-   if(reason == "SL" || reason == "OTHER") gExitSigPx = xPx;
+   static int waits = 0;
+   if(xPx <= 0 && waits < 30) { waits++; return; }       // closing deal not in history yet: try again on the next tick/timer
+   waits = 0;
+   if(xPx <= 0) { xPx = (gSide == 1 ? SymbolInfoDouble(_Symbol, SYMBOL_BID) : SymbolInfoDouble(_Symbol, SYMBOL_ASK)); if(reason == "") reason = "UNKNOWN"; }
+   if(reason == "SL" || reason == "OTHER" || reason == "UNKNOWN") gExitSigPx = xPx;
    WriteCsv(xTime, xPx, reason, comm, swap, profit);
    PrintFormat("DCFade exit %s %s @ %.2f profit %.2f comm %.2f", (gSide == 1 ? "BUY" : "SELL"), reason, xPx, profit, comm);
    gTicket = 0; gPosId = 0; gSide = 0; gExitReason = ""; gExitSigPx = 0; GVset("pos", 0);
@@ -211,7 +215,7 @@ void RequestExit(string reason, double sigPx)
   {
    if(gTicket == 0 || gExitReason != "") return;
    gExitReason = reason; gExitSigPx = sigPx;
-   if(SafeClose(gTicket) && !PositionSelectByTicket(gTicket)) FinishTrade();
+   SafeClose(gTicket);                                    // logging happens in Housekeeping once the deal is in history
   }
 
 //==================== DC state machine (identical to code/dcfade58.py) ====================
@@ -274,8 +278,6 @@ void TryEntry(datetime sigBarOpen, double sigPx)
    datetime sigUTC = ToUTC(sigBarOpen);
    int nyh = NYHour(sigUTC);
    if(nyh <= 2 || nyh == 16 || nyh == 17) { Print("DCFade signal skipped: NY hour ", nyh); return; }
-   int um = UTCMinuteOfDay(ToUTC(TimeCurrent()));
-   if(um >= NOENTRY_FROM && um < NOENTRY_TO) { Print("DCFade signal skipped: close to 21:45 UTC / rollover"); return; }
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID), ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double spr = ask - bid;
    if(spr > InpMaxSpread) { PrintFormat("DCFade signal skipped: spread %.3f > %.3f", spr, InpMaxSpread); return; }
@@ -324,8 +326,8 @@ void Housekeeping()
    if(gTicket != 0 && !PositionSelectByTicket(gTicket)) FinishTrade();     // SL hit or delayed close done
    if(gTicket != 0)
      {
-      int um = UTCMinuteOfDay(ToUTC(TimeCurrent()));
-      if(um >= EOD_UTC_MIN && um < NOENTRY_TO)
+      int nm = NYMinuteOfDay(ToUTC(TimeCurrent()));
+      if(nm >= EOD_NY_MIN && nm < 18 * 60)                // 16:45-17:59 New York
          RequestExit("EOD", SymbolInfoDouble(_Symbol, SYMBOL_BID));
      }
   }

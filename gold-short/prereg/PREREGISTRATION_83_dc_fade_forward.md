@@ -52,3 +52,11 @@ Until 300 trades or 3 calendar months from the first trade, whichever comes firs
 - **FAIL** -> the DC file is closed permanently.
 - No rule changes during the test. If the EA has a bug that makes trades differ from these rules, the test restarts from zero after the fix, and that is logged.
 - Reference: code/dc83_reference.py simulates exactly these rules on historical minutes (Nov-Dec 2023, outside the sealed vault). It is used only to check the EA's behaviour (trades per day, exit mix), never as evidence.
+
+## Amendment A (before the EA was run anywhere)
+- **Force-close time:**
+  - The user specified 21:45 UTC, with the intent "before the swap/rollover and the gold break". The rollover and break are at 17:00 New York, which is 22:00 UTC in winter but 21:00 UTC in summer (US DST).
+  - So the force-close is set to **16:45 New York time** (DST-aware): 21:45 UTC in winter, 20:45 UTC in summer.
+- **No-entry window:** the separate 21:30-22:59 UTC window is dropped. The New York 16:00-17:59 hour filter already blocks entries in that period.
+- **No other change.**
+- **Context (#84, done before any demo run):** silver confirmed the gross signal (theta 0.2% both sides +1.43 bp, day-t 3.59, random p 0.002). By the user's decision rule, the demo forward test goes ahead.
