@@ -1,0 +1,59 @@
+{
+ "PAXG_real_volume": {
+  "minutes": 439377,
+  "median_abs_vwap_minus_twap_bp": 2.88,
+  "p90_abs_gap_bp": 10.92,
+  "sign_agreement": 0.9107,
+  "ZA_zero_cost": {
+   "VWAP": {
+    "gross_bp_day": -106.215,
+    "day_t": -23.81,
+    "flips_day": 57.9
+   },
+   "TWAP": {
+    "gross_bp_day": -112.648,
+    "day_t": -24.41,
+    "flips_day": 59.2
+   }
+  },
+  "median_minute_volume": 0.0783
+ },
+ "XAU_dukascopy_tick_volume": {
+  "minutes": 305163,
+  "median_abs_vwap_minus_twap_bp": 1.81,
+  "p90_abs_gap_bp": 6.77,
+  "sign_agreement": 0.9621,
+  "ZA_zero_cost": {
+   "VWAP": {
+    "gross_bp_day": -2.553,
+    "day_t": -1.33,
+    "flips_day": 32.9
+   },
+   "TWAP": {
+    "gross_bp_day": -2.791,
+    "day_t": -1.45,
+    "flips_day": 35.0
+   }
+  },
+  "median_minute_volume": 0.035270001739263535
+ },
+ "XAU_prices_weighted_by_PAXG_volume": {
+  "minutes": 231834,
+  "median_abs_vwap_minus_twap_bp": 2.84,
+  "p90_abs_gap_bp": 9.38,
+  "sign_agreement": 0.9349,
+  "ZA_zero_cost": {
+   "VWAP": {
+    "gross_bp_day": -2.127,
+    "day_t": -1.13,
+    "flips_day": 30.8
+   },
+   "TWAP": {
+    "gross_bp_day": -0.913,
+    "day_t": -0.49,
+    "flips_day": 29.6
+   }
+  },
+  "median_minute_volume": 0.354614
+ }
+}
