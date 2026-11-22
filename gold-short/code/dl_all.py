@@ -4,7 +4,7 @@ import requests, time, datetime as dt, os, threading
 from concurrent.futures import ThreadPoolExecutor
 R=os.environ.get("GDATA")+"/raw"
 jobs=[]
-for side,folder in (("BID","cache_XAUUSD_h"),("ASK","cache_XAUUSD_ASK_h")):
+for side,folder in ():
     for y in range(2004,2027):
         for m in range(1,13):
             if (y,m)<=(2026,10): jobs.append((f"{R}/{folder}/{y}-{m:02d}.bi5",f"https://datafeed.dukascopy.com/datafeed/XAUUSD/{y}/{m-1:02d}/{side}_candles_hour_1.bi5"))
@@ -32,7 +32,7 @@ for p in range(40):
     print(time.strftime("%H:%M:%S"),"pass",p,"todo",len(todo),"of",len(jobs),flush=True)
     if not todo: break
     done=0
-    with ThreadPoolExecutor(3) as ex:
+    with ThreadPoolExecutor(int(os.environ.get('NTHR','6'))) as ex:
         for i,ok in enumerate(ex.map(work,todo)):
             done+=ok
             if i%250==0: print(time.strftime("%H:%M:%S"),p,i,len(todo),"ok",done,flush=True)
