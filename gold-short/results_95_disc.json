@@ -1,0 +1,132 @@
+{
+ "ridge_w": [
+  0.0325,
+  0.044,
+  0.0231,
+  -0.0565,
+  0.0264,
+  -0.0473
+ ],
+ "gk_ic": [
+  0.0051,
+  0.0046,
+  -0.0037,
+  0.0014,
+  -0.0049
+ ],
+ "gk_w": [
+  0.0,
+  0.0609,
+  0.0553,
+  -0.0439,
+  0.017,
+  -0.0584
+ ],
+ "fit_rows": 240402,
+ "COMBO_RIDGE": {
+  "A": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  },
+  "B": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  },
+  "C": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  },
+  "placebo_p": 1.0,
+  "holm": 1.0
+ },
+ "COMBO_GK": {
+  "A": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  },
+  "B": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  },
+  "C": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  },
+  "placebo_p": 1.0,
+  "holm": 1.0
+ },
+ "NOBAND_RIDGE": {
+  "B": {
+   "bp_day": -3.042,
+   "day_t": -5.3,
+   "ann_pct": -7.67,
+   "turnover_day": 11.7,
+   "p1": 0.9999999308303921
+  }
+ },
+ "SINGLE_DC_FADE": {
+  "B": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  }
+ },
+ "SINGLE_OU": {
+  "B": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  }
+ },
+ "SINGLE_OVERNIGHT": {
+  "B": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  }
+ },
+ "SINGLE_SONIC_H1": {
+  "B": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  }
+ },
+ "SINGLE_SCALE_LAW": {
+  "B": {
+   "bp_day": 0.0,
+   "day_t": 0.0,
+   "ann_pct": 0.0,
+   "turnover_day": 0.0,
+   "p1": 0.5
+  }
+ },
+ "placebo_mean_bp_day": 0.0,
+ "placebo_p95_bp_day": 0.0
+}
