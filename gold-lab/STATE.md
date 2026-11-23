@@ -6,7 +6,7 @@
 - Engine check: Williams #112 reproduced exactly (disc n 2053, net1 +5.09bp t 2.25, net2 +7.29 t 3.23; conf n 1123, +1.13 / +2.07).
 - Rules: `prereg/PREREGISTRATION_LAB_COMMON.md` (gates, costs, periods, vault = one look after an independent audit).
 
-## Round counter: 3 finished
+## Round counter: 5 finished here (round 4 = #142-#143 runs in the parallel session on branch claude/busy-cannon-9cnt9p)
 | Round | Families | Trials added | Cumulative | Luck threshold (t, disc) | Result |
 |---|---|---|---|---|---|
 | 1 | #123-#132 classics part 3 (Pinball, ORB60, Specialist Trap, Anti, TD9/TD13 D1+H4, Ichimoku, Keltner) | 10 | 48,756 | Holm in family | all fail discovery (best ANTI t 1.29) |
@@ -18,9 +18,13 @@
 | 3 | #139 weekend-gap fade | 1 | 128,832 | 4.0 | fail (only 16 trades) |
 | 3 | #140 level-breakout search (Williams/ATR/PD/Asia/week/N-day levels x windows x stops x 21 filters) | 11,340 | 140,172 | 3.95 | 10 beat threshold (best 5.41), ALL fail confirmation |
 | 3 | #141 silver->gold cross-asset conditions | 10,000 | 150,172 | 4.17 | best 3.09 < threshold |
+| 4 | #142 EURUSD->gold, #143 gold+silver agreement (other session; counted) | 60,000 | 210,172 | - | see branch claude/busy-cannon-9cnt9p |
+| 5 | #144 MODERN brute force (disc 2017-2021, conf 2022-2023) | 50,000 | 260,172 | 4.33 | best 3.34, fail |
+| 5 | #145 MODERN cross-asset (yuan USDCNH, S&P500, USDJPY) | 10,000 | 270,172 | 4.22 | best 2.91, fail |
+| 5 | #146 MODERN GP (30,000 evals) | 30,000 | 300,172 | 5.24 | best 5.07, fail |
 
 ## Current threshold for any new candidate
-- Cumulative trials: **150,172**. Threshold rule (prereg 135_138): 95th pct over nulls of max(family's own null, random-rule null at cumulative size). The random-rule part alone gives ~4.0 (t of net1/trade in discovery); GP-type searches ~5.4.
+- Cumulative trials: **300,172** (incl. round 4 of the parallel session). Threshold rule (prereg 135_138): 95th pct over nulls of max(family's own null, random-rule null at cumulative size). The random-rule part alone gives ~4.0 (t of net1/trade in discovery); GP-type searches ~5.4.
 - Benchmark (same engine): Williams #112 disc t1 2.25, Sonic t1 1.83 — the existing portfolio would not pass this threshold either.
 - DSR is computed with N = cumulative trials.
 
