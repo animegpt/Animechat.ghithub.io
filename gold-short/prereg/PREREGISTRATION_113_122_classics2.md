@@ -1,0 +1,53 @@
+# Pre-registration #113-#122: classic day-horizon strategies, part 2. Written BEFORE computing.
+- **Trials:** 48,736 + 10 = 48,746. **Holm over the whole family of 10** (all are day-horizon breakout/reversal rules close to #112).
+- **Data:** daily OHLC 2004-2023 built from Dukascopy hourly BID (the day = 17:00 -> 17:00 New York, as #112). Intraday trigger order from hourly bars (if a stop and a target/entry are in the same hour: the worse outcome). Vault 2024-2026 sealed.
+- **Sources:** books (not reachable online from this session), written from the published rules as known.
+  - Where a parameter is not certain it is stated, and no value is tuned on our data.
+  - #9 (Williams day-of-week filter) is SKIPPED: no explicit written day-of-week rule for gold is known to me, and choosing days from our data is forbidden.
+- **Costs (lesson from #112):**
+  - PRIMARY = spread 0.24/P at the trade's price + 0.1 bp per side.
+  - SECOND = 0.24/4000 + 0.1 bp per side.
+  - A pass needs both.
+- **Swap:** longs held overnight pay 1.079e-4 per calendar day; short 0.
+- **Execution:** stop entries at the level (gap -> the hourly bar open). One position at a time per strategy.
+- **Pass:**
+  - Discovery 2004-2016: net > 0 and t >= 2 under both costs, Holm < 0.05 (primary cost), random-direction p < 0.05.
+  - Confirmation 2017-2023: net > 0 under both costs.
+  - Then the independent audit, and ONE look at the vault per survivor: net > 0.
+  - **Portfolio:** correlation with #112 (if > 0.7 only the stronger is kept), Sonic, Overnight.
+
+## Rules (long side described; short = mirror)
+- **#113 TSOUP** (Raschke & Connors, *Street Smarts*, 1995):
+  - Setup: the previous 20-day low (days t-20..t-1) was set >= 4 trading days before today.
+  - Today trades below it, then a buy stop at that low + 0.50 USD (5 ticks) fills, after the break.
+  - Initial stop = the low of the day up to the entry bar. Exit at the close of day 3 (entry day = day 1) or the stop.
+  - The book trails discretionarily; a fixed 3-day time exit is used here, disclosed.
+- **#114 TSOUP1** (Turtle Soup Plus One, same book):
+  - Day t-1 makes a new 20-day low (the prior 20-day low was set >= 3 days earlier) and closes at or below that prior low.
+  - Day t: buy stop at the prior 20-day low. Stop = min(low t-1, the day-t low up to entry). Exit at the day-3 close or the stop.
+- **#115 HOLYGRAIL** (same book):
+  - ADX(14) > 30 and +DI > -DI at t-1, and the t-1 low touched EMA20 (L <= EMA20).
+  - Day t: buy stop at the t-1 high. Stop = the t-1 low. Target = the highest high of days t-21..t-2 (the prior swing high). Max 10 days.
+- **#116 EIGHTY20** (80-20s, same book):
+  - Day t-1 opened in the top 20% of its range and closed in the bottom 20%.
+  - Day t: price trades >= 1.00 USD (10 ticks) below the t-1 low, then a buy stop at the t-1 low fills.
+  - Stop = the day low up to entry. Exit at the day close.
+- **#117 OOPS** (L. Williams):
+  - Day t opens below the t-1 low -> buy stop at the t-1 low. Exit at the day close.
+  - Mirror: opens above the t-1 high -> sell stop at the t-1 high.
+- **#118 SMASH** (Williams naked-close reversal):
+  - Day t-1 closes below the t-2 low -> day t buy stop at the t-1 high. Exit at the day close.
+  - Mirror: a close above the t-2 high -> sell stop at the t-1 low.
+- **#119 STRETCH** (Toby Crabel, *Day Trading with Short Term Price Patterns and Opening Range Breakout*, 1990):
+  - stretch = SMA over the 10 previous days of min(H-O, O-L).
+  - Buy stop O+stretch, sell stop O-stretch; the first touched wins. Exit at the day close.
+- **#120 NR7** (Crabel):
+  - The t-1 range is the smallest of the last 7 days (t-7..t-1).
+  - Day t: buy stop at the t-1 high, sell stop at the t-1 low (one-cancels-other). Exit at the day close.
+- **#121 GSV** (Williams, *Long-Term Secrets to Short-Term Trading*, Greatest Swing Value):
+  - Buy GSV = the mean of (H-O) over the down-closing days (C < O) among the last 4. Sell GSV = the mean of (O-L) over the up-closing days among the last 4.
+  - Buy stop O + 1.8 x buyGSV, sell stop O - 1.8 x sellGSV. The first touched wins; exit at the day close.
+  - **UNCERTAINTY:** the multiplier 1.8 and the exact swing definition are from memory of the book; not tuned.
+- **#122 W_NR** (#112 after a narrow day): the #112 rule (0.6 x the previous range), taken only if the t-1 range < the mean range of t-10..t-1.
+- **Reference (not in Holm):** #112 itself under the same engine and primary cost, for the comparison and correlations.
+- **1968-1998:** close-only data cannot run these stop-entry intraday rules, so it is skipped (disclosed).
