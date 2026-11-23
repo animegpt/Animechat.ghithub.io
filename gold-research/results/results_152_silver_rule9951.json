@@ -1,0 +1,32 @@
+{
+ "name": "rule:9951",
+ "market": "silver",
+ "period": [
+  "2023-01-01",
+  "2026-11-01"
+ ],
+ "net1": {
+  "n": 616,
+  "months": 46,
+  "sh_base": 0.218,
+  "sh_sized": 0.326,
+  "D": 0.108,
+  "t_jkm": 1.36,
+  "mean_size": 1.122,
+  "t_boot": 1.09
+ },
+ "net2": {
+  "n": 616,
+  "months": 46,
+  "sh_base": 0.218,
+  "sh_sized": 0.326,
+  "D": 0.108,
+  "t_jkm": 1.36,
+  "mean_size": 1.122
+ },
+ "plain_williams": {
+  "n": 616,
+  "mean_bp": 3.63,
+  "t": 0.42
+ }
+}

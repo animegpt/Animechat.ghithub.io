@@ -62,7 +62,9 @@ def build(inst, vault=False, strat="williams"):
         T = getattr(refs, strat)(M)
     T["t0"] = M.idx[T.j0.values]                       # start time of entry bar (UTC naive)
     T = T.sort_values("t0").reset_index(drop=True)
-    bars = tf_bars(M); raw = {}
+    bars = tf_bars(M)
+    first = max(b["avail"].min() for b in bars.values())       # drop trades before every TF has one completed bar (warm-up)
+    T = T[T.t0 >= first].reset_index(drop=True); raw = {}
     for tf in TFS:
         B = bars[tf]; F = ind3.all_features(B)
         F["avail"] = B["avail"].values

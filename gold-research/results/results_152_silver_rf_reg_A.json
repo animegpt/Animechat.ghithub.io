@@ -1,0 +1,32 @@
+{
+ "name": "rf_reg_A",
+ "market": "silver",
+ "period": [
+  "2023-01-01",
+  "2026-11-01"
+ ],
+ "net1": {
+  "n": 616,
+  "months": 46,
+  "sh_base": 0.218,
+  "sh_sized": 0.474,
+  "D": 0.256,
+  "t_jkm": 2.28,
+  "mean_size": 1.01,
+  "t_boot": 3.0
+ },
+ "net2": {
+  "n": 616,
+  "months": 46,
+  "sh_base": 0.218,
+  "sh_sized": 0.474,
+  "D": 0.256,
+  "t_jkm": 2.28,
+  "mean_size": 1.01
+ },
+ "plain_williams": {
+  "n": 616,
+  "mean_bp": 3.63,
+  "t": 0.42
+ }
+}
