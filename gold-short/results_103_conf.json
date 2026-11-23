@@ -1,0 +1,40 @@
+{
+ "SONIC_H1H4_swapfree": {
+  "H1_alone": {
+   "ann_pct": 4.52,
+   "sharpe_m": 0.529,
+   "maxdd_pct": -11.46
+  },
+  "H1_plus_H4": {
+   "ann_pct": 4.7,
+   "sharpe_m": 0.525,
+   "maxdd_pct": -12.61
+  },
+  "H4_alone_0.15": {
+   "ann_pct": 0.18,
+   "sharpe_m": 0.133,
+   "maxdd_pct": -3.08
+  },
+  "corr_monthly": 0.233,
+  "pass": false
+ },
+ "SONIC_H1H4_swap": {
+  "H1_alone": {
+   "ann_pct": 4.03,
+   "sharpe_m": 0.479,
+   "maxdd_pct": -11.84
+  },
+  "H1_plus_H4": {
+   "ann_pct": 4.08,
+   "sharpe_m": 0.464,
+   "maxdd_pct": -13.41
+  },
+  "H4_alone_0.15": {
+   "ann_pct": 0.05,
+   "sharpe_m": 0.039,
+   "maxdd_pct": -3.29
+  },
+  "corr_monthly": 0.233,
+  "pass": false
+ }
+}
