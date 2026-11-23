@@ -45,3 +45,9 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
 - Verified here: model export exact; generated feature assembly == make_X exactly (300 trades). NOT verified here: MQL5
   compile and the MQL5 indicator port -> parity check via `code/shadow_compare.py --bars` after a Strategy Tester run.
 - Compare: `python code/shadow_compare.py --trades ... --signals ... --bars ...` (needs about 600 trades for t~2).
+- 2026-11-23 (report from the local MT5 session): compile 0 errors/0 warnings. BUG found in the Williams exit (also in the
+  original GoldWilliams.mq5 v1.00): exit only fires on a tick/timer inside 16:58-17:00 NY; if none arrives the trade is
+  held forever (tester: a SELL from 2022-03-22 stayed open to 2025-06 and blocked every later trade). FIX v1.01 (Shadow
+  template + mt5/GoldWilliams.mq5): if the position's trading day != current day -> close at once (reason STALE_CLOSE).
+  Research logic unchanged (research never holds overnight). Also InpMinBars input + shadow_compare --minbars for tester
+  parity runs (tester gives ~1 year of history before the start date). Next: tester 2023-01..2025-06, InpMinBars 4000.

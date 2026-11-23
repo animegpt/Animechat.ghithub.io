@@ -9,7 +9,7 @@
 //| Magic 770502. Run it INSTEAD of GoldWilliams (770501), not with. |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.00"
+#property version   "1.01"
 #property description "Williams #112 + SHADOW RF sizing (logged only, never applied). Research #149-#153: model = 'probable, not proven'."
 #property description "Logs: MQL5/Files/GoldWilliams_Shadow_trades.csv, _signals.csv, _bars.csv"
 #include <Trade/Trade.mqh>
@@ -23,6 +23,7 @@ input double InpFixedLot   = 0.0;    // Fixed lot (>0 overrides)
 input group "Shadow"
 input bool   InpShadow     = true;   // Compute + log the AI size (never applied)
 input int    InpHistBars   = 20000;  // H1 bars used for the features (research check: >=15000 -> size error ~0.01)
+input int    InpMinBars    = 15000;  // Min usable bars to compute (live: keep 15000; Strategy Tester parity run: e.g. 4000)
 input bool   InpDumpBars   = true;   // Write H1 bars once per trading day (overwrite; for the Python parity check)
 input group "Technical"
 input int    InpServerUTC  = 0;      // Broker server offset from UTC (Exness = 0)
@@ -40,6 +41,7 @@ bool     tradedToday = false;
 ulong    pendClose[];
 ulong gTicket = 0; long gPosId = 0; int gSide = 0; double gLvl = 0, gEnt = 0, gVol = 0, gSpr = 0; datetime gEntT = 0;
 // shadow results of the open trade
+bool   gStale = false;
 bool   gShOk = false; double gShPred = 0, gShPct = 0, gShSize = 1.0; string gShNote = ""; double gFeat[];
 double NANV = 0;
 
@@ -385,7 +387,7 @@ void ComputeRaw(const double &o[], const double &h[], const double &l[], const d
 bool BuildAndCompute(datetime t0utc)
   {
    MqlRates r[]; int got = CopyRates(_Symbol, PERIOD_H1, 1, InpHistBars, r);      // index 0 (current, incomplete) excluded
-   if(got < 15000) { gShNote = "history " + IntegerToString(got) + " < 15000 H1 bars"; return false; }
+   if(got < InpMinBars) { gShNote = "history " + IntegerToString(got) + " < InpMinBars H1 bars"; return false; }
    double o[], h[], l[], c[], v[]; datetime tu[];
    int n = 0; ArrayResize(o, got); ArrayResize(h, got); ArrayResize(l, got); ArrayResize(c, got); ArrayResize(v, got); ArrayResize(tu, got);
    for(int i = 0; i < got; i++)
@@ -394,7 +396,7 @@ bool BuildAndCompute(datetime t0utc)
       if(r[i].tick_volume <= 0) continue;                                  // research drops zero-volume bars
       o[n] = r[i].open; h[n] = r[i].high; l[n] = r[i].low; c[n] = r[i].close; v[n] = (double)r[i].tick_volume; tu[n] = u; n++;
      }
-   if(n < 15000) { gShNote = "usable bars " + IntegerToString(n); return false; }
+   if(n < InpMinBars) { gShNote = "usable bars " + IntegerToString(n); return false; }
    // H1
    gTf = 0; ComputeRaw(o, h, l, c, v, n, n - 1);
    // H4 and D1 aggregation
@@ -792,6 +794,7 @@ void FinishIfClosed()
          if(e == DEAL_ENTRY_OUT || e == DEAL_ENTRY_OUT_BY) { xPx = HistoryDealGetDouble(d, DEAL_PRICE); xT = (datetime)HistoryDealGetInteger(d, DEAL_TIME); if(HistoryDealGetInteger(d, DEAL_REASON) == DEAL_REASON_SL) why = "SL"; }
         }
    static int waits = 0; if(xPx <= 0 && waits < 30) { waits++; return; } waits = 0;
+   if(gStale && why == "CLOSE") why = "STALE_CLOSE"; gStale = false;
    LogTrade(xT, xPx, why, comm, swap, profit); gTicket = 0; gPosId = 0; gSide = 0;
   }
 
@@ -805,6 +808,10 @@ void OnTickLogic()
    ulong tk;
    if(FindPos(tk))
      {
+      // v1.01 SAFETY: a Williams trade never lives past its trading day. If the 16:58-17:00 NY window got no tick/timer
+      // (e.g. broker daily break), close at the first chance of the next day instead of holding forever.
+      datetime posKey = TradingDayKey(ToUTC((datetime)PositionGetInteger(POSITION_TIME)));
+      if(posKey != dayKey) { gStale = true; SafeClose(tk); return; }
       if(nm >= EXIT_NY_MIN && nm < 17 * 60) SafeClose(tk);
       return;
      }

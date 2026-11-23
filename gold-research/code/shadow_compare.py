@@ -24,7 +24,7 @@ def load_csv(p):
     return pd.read_csv(p, skipinitialspace=True)
 
 
-def recompute(bars, T, hist):
+def recompute(bars, T, hist, minbars=15000):
     """research features at each trade's entry hour from the dumped bars (same window as the EA)."""
     import lab, ind3, features149 as F, export_rf as E
     J = json.load(open(MODEL))
@@ -34,7 +34,7 @@ def recompute(bars, T, hist):
     for _, r in T.iterrows():
         t0 = pd.Timestamp(r.entry_time_utc).floor("h")
         done = B[B.index + pd.Timedelta(hours=1) <= t0].iloc[-hist:]
-        if len(done) < 15000: out.append((np.nan, None)); continue
+        if len(done) < minbars: out.append((np.nan, None)); continue
         day_end = t0 + pd.Timedelta(hours=30)                               # bars from t0 on: so the running H4/D1 group is 'incomplete'
         S = pd.concat([done, B[(B.index >= t0) & (B.index < day_end)]])
         M = lab.Mkt(S); bars_tf = F.tf_bars(M); raw = {}
@@ -96,12 +96,12 @@ def verdict(res):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--trades", required=True); ap.add_argument("--signals"); ap.add_argument("--bars")
-    ap.add_argument("--hist", type=int, default=20000); ap.add_argument("--json"); a = ap.parse_args()
+    ap.add_argument("--hist", type=int, default=20000); ap.add_argument("--minbars", type=int, default=15000); ap.add_argument("--json"); a = ap.parse_args()
     T = load_csv(a.trades); T = T[T.shadow_ok == 1].reset_index(drop=True)
     out = {"source_size": "ea"}
     size = T.shadow_size.values.astype(float); pred = T.shadow_pred.values.astype(float)
     if a.bars:
-        rc = recompute(load_csv(a.bars), T, a.hist); py = np.array([x[0] for x in rc])
+        rc = recompute(load_csv(a.bars), T, a.hist, a.minbars); py = np.array([x[0] for x in rc])
         ok = ~np.isnan(py)
         par = {"n_checked": int(ok.sum()), "size_mean_abs_diff": round(float(np.abs(py[ok] - size[ok]).mean()), 4) if ok.any() else None,
                "size_max_abs_diff": round(float(np.abs(py[ok] - size[ok]).max()), 4) if ok.any() else None,
