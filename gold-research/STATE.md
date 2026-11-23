@@ -20,8 +20,12 @@ Prereg: `prereg/PREREGISTRATION_149_153.md` (committed before any evaluation).
 
 ## Status
 - [x] Prereg, indicator code (ind3.py), features (206), metric, models, rules, verdict code; synthetic smoke tests OK.
-- [ ] Data download (in progress)
-- [ ] #149 features on real data, #150, #151, #152, report
+- [x] Data download done (gold 274 files, silver 58). Williams reproduced exactly (disc n2053 t2.25, conf n1123).
+- [x] #149 features (206, look-ahead 0 mismatches), #150 models, #151 rules, #152 verdict + silver.
+- RESULT: NO WINNER. 16/20 models pass D>0 both periods & t>=2 (best RF-reg 0.5-1.5: D +0.292 t 3.14/3.30), all fail
+  Holm over 50,020 trials and DSR (N 350,192). Rules: best disc t 4.975 < luck threshold 4.993. Silver (descriptive):
+  RF-reg D +0.256 t 2.28. Vault NOT opened, audit not run (only for a winner). Report: REPORT_WILLIAMS_3IND.md
+- [ ] #153 Sonic / Overnight (running: /home/user/lab/p153.log), then add section 8 of the report.
 
 If the conversation ends: "اقرأ STATE.md وكمّل".
 
