@@ -27,7 +27,7 @@ else:
         f = f"{RAW}/{d}.bi5"
         if not os.path.exists(f) or os.path.getsize(f) == 0: continue
         raw = lzma.decompress(open(f, "rb").read())
-        a = np.frombuffer(raw, dtype=">i4").reshape(-1, 6).astype(np.int64); v = np.frombuffer(raw, dtype=">f4").reshape(-1, 6)[:, 5]
+        a = np.frombuffer(raw, dtype=">i4").reshape(-1, 6).astype(np.int64); v = np.frombuffer(raw, dtype=">f4").reshape(-1, 6)[:, 5].astype(np.float64)
         m = pd.DataFrame({"o": a[:, 1], "c": a[:, 2], "l": a[:, 3], "h": a[:, 4]}, index=pd.Timestamp(d) + pd.to_timedelta(a[:, 0], unit="s")) / 1e3
         m["v"] = v; out.append(m[m.v > 0])
     m = pd.concat(out).sort_index()
