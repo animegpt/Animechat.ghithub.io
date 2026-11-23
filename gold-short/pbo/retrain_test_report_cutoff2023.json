@@ -1,0 +1,15 @@
+{
+ "cutoff": "2023-12-31",
+ "raw_files_linked": 720,
+ "policy": "yearly retrain on all data up to cutoff (#106)",
+ "sonic_trades": "1884",
+ "parity_sonic_arrays_vs_sklearn_maxdiff": 1.6437605387942256e-08,
+ "overnight_threshold": 0.39500640654053787,
+ "overnight_trained_on": "2004-02-02..2023-12-28",
+ "parity_ea_array_lengths": true,
+ "parity_ea_thr_maxdiff": 0.0,
+ "parity_ea_val_maxdiff": 0.0,
+ "parity_overnight_prob_maxdiff": 8.332488070084132e-07,
+ "parity_overnight_decision_agreement": 1.0,
+ "PASS": true
+}

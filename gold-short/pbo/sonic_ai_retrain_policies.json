@@ -1,0 +1,18 @@
+{
+ "P0": {
+  "trades": 1030,
+  "unsized_totR": 234.6,
+  "ai_sized_totR": 233.3,
+  "mean_w": 1.032,
+  "ai_minus_unsized_per_meanw": -8.4,
+  "years_ai_better": 7
+ },
+ "P1": {
+  "trades": 1030,
+  "unsized_totR": 234.6,
+  "ai_sized_totR": 243.9,
+  "mean_w": 0.998,
+  "ai_minus_unsized_per_meanw": 9.7,
+  "years_ai_better": 7
+ }
+}

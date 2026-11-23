@@ -1,0 +1,32 @@
+{
+ "P0": {
+  "nights": 1474,
+  "net_bp": 1.543,
+  "t": 3.47,
+  "ann_sharpe_monthly": 0.902
+ },
+ "P1": {
+  "nights": 1198,
+  "net_bp": 2.45,
+  "t": 4.62,
+  "ann_sharpe_monthly": 1.149
+ },
+ "P2": {
+  "nights": 1244,
+  "net_bp": 1.929,
+  "t": 3.58,
+  "ann_sharpe_monthly": 0.911
+ },
+ "P3": {
+  "nights": 1221,
+  "net_bp": 2.524,
+  "t": 4.83,
+  "ann_sharpe_monthly": 1.207
+ },
+ "P4": {
+  "nights": 1185,
+  "net_bp": 2.407,
+  "t": 4.48,
+  "ann_sharpe_monthly": 1.096
+ }
+}

@@ -1,0 +1,20 @@
+cfg 0.3 2 1.2
+cfg 0.3 3 1.17
+cfg 0.3 4 1.17
+cfg 0.4 2 1.67
+cfg 0.4 3 1.67
+cfg 0.4 4 1.7
+cfg 0.5 2 2.26
+cfg 0.5 3 2.45
+cfg 0.5 4 2.3
+cfg 0.6 2 3.18
+cfg 0.6 3 3.16
+cfg 0.6 4 3.14
+cfg 0.7 2 3.94
+cfg 0.7 3 4.46
+cfg 0.7 4 4.41
+P0 {'nights': 1474, 'net_bp': 1.543, 't': 3.47, 'ann_sharpe_monthly': 0.902}
+P1 {'nights': 1198, 'net_bp': 2.45, 't': 4.62, 'ann_sharpe_monthly': 1.149}
+P2 {'nights': 1244, 'net_bp': 1.929, 't': 3.58, 'ann_sharpe_monthly': 0.911}
+P3 {'nights': 1221, 'net_bp': 2.524, 't': 4.83, 'ann_sharpe_monthly': 1.207}
+P4 {'nights': 1185, 'net_bp': 2.407, 't': 4.48, 'ann_sharpe_monthly': 1.096}

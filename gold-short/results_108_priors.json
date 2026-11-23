@@ -1,0 +1,23 @@
+{
+ "GoldComboAI_Sonic": {
+  "oos_mean": 0.16599356988940087,
+  "se": 0.12802879720218685,
+  "prior_mean_shrunk50": 0.08299678494470043,
+  "prior_sd": 0.12802879720218685,
+  "p_edge_pos_prior": 0.742
+ },
+ "GoldComboAI_Overnight": {
+  "oos_mean": 0.00024495865738577844,
+  "se": 5.306662966277848e-05,
+  "prior_mean_shrunk50": 0.00012247932869288922,
+  "prior_sd": 5.306662966277848e-05,
+  "p_edge_pos_prior": 0.99
+ },
+ "GoldDCFade": {
+  "oos_mean": 8.841017560792519e-05,
+  "se": 4.4636188575184274e-05,
+  "prior_mean_shrunk50": 4.4205087803962595e-05,
+  "prior_sd": 4.4636188575184274e-05,
+  "p_edge_pos_prior": 0.839
+ }
+}

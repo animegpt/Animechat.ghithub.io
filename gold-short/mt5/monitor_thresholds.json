@@ -1,0 +1,68 @@
+{
+ "GoldComboAI_Sonic": {
+  "mean": 0.16599356988940087,
+  "sd": 3.228763412313235,
+  "m0_sd_units": 0.0514,
+  "trades_per_year": 95,
+  "win_rate": 0.253,
+  "h_yellow": 9.204,
+  "h_red": 12.487,
+  "false_alarm_red_per_year": 0.05,
+  "median_trades_to_red_if_edge_zero": 146,
+  "p90_trades_to_red_if_edge_zero": 313,
+  "p_losing_streak_per_year": {
+   "5": 1.0,
+   "8": 0.948,
+   "10": 0.749,
+   "12": 0.513,
+   "15": 0.241,
+   "18": 0.105,
+   "20": 0.057,
+   "25": 0.015
+  }
+ },
+ "GoldComboAI_Overnight": {
+  "mean": 0.00024495865738577844,
+  "sd": 0.001836749434776623,
+  "m0_sd_units": 0.1334,
+  "trades_per_year": 100,
+  "win_rate": 0.556,
+  "h_yellow": 10.674,
+  "h_red": 14.676,
+  "false_alarm_red_per_year": 0.05,
+  "median_trades_to_red_if_edge_zero": 122,
+  "p90_trades_to_red_if_edge_zero": 265,
+  "p_losing_streak_per_year": {
+   "5": 0.648,
+   "8": 0.076,
+   "10": 0.013,
+   "12": 0.003,
+   "15": 0.0,
+   "18": 0.0,
+   "20": 0.0,
+   "25": 0.0
+  }
+ },
+ "GoldDCFade": {
+  "mean": 8.841017560792519e-05,
+  "sd": 0.0025004235079621835,
+  "m0_sd_units": 0.0354,
+  "trades_per_year": 350,
+  "win_rate": 0.648,
+  "h_yellow": 26.218,
+  "h_red": 36.996,
+  "false_alarm_red_per_year": 0.05,
+  "median_trades_to_red_if_edge_zero": 764,
+  "p90_trades_to_red_if_edge_zero": 1950,
+  "p_losing_streak_per_year": {
+   "5": 0.709,
+   "8": 0.052,
+   "10": 0.006,
+   "12": 0.001,
+   "15": 0.0,
+   "18": 0.0,
+   "20": 0.0,
+   "25": 0.0
+  }
+ }
+}
