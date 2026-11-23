@@ -1,0 +1,136 @@
+{
+ "A": {
+  "est_mean_bp_day": [
+   7.535,
+   0.348
+  ],
+  "est_corr": -0.001,
+  "current (S 0.3%, O 2x)": {
+   "w_sonic_risk_pct": 0.3,
+   "w_overnight_x": 2.0,
+   "mc_dd95_est_pct": 19.4,
+   "est": {
+    "ann_pct": 7.45,
+    "sharpe": 0.734,
+    "maxdd_pct": -18.16
+   },
+   "test": {
+    "ann_pct": 3.59,
+    "sharpe": 0.571,
+    "maxdd_pct": -5.82
+   }
+  },
+  "kelly_frac": {
+   "w_sonic_risk_pct": 0.18,
+   "w_overnight_x": 2.16,
+   "mc_dd95_est_pct": 15.0,
+   "est": {
+    "ann_pct": 5.31,
+    "sharpe": 0.758,
+    "maxdd_pct": -13.79
+   },
+   "test": {
+    "ann_pct": 2.67,
+    "sharpe": 0.605,
+    "maxdd_pct": -4.89
+   }
+  },
+  "risk_parity": {
+   "w_sonic_risk_pct": 0.147,
+   "w_overnight_x": 2.372,
+   "mc_dd95_est_pct": 15.0,
+   "est": {
+    "ann_pct": 4.87,
+    "sharpe": 0.75,
+    "maxdd_pct": -13.11
+   },
+   "test": {
+    "ann_pct": 2.51,
+    "sharpe": 0.605,
+    "maxdd_pct": -4.93
+   }
+  },
+  "robust": {
+   "w_sonic_risk_pct": 0.227,
+   "w_overnight_x": 1.636,
+   "mc_dd95_est_pct": 15.0,
+   "est": {
+    "ann_pct": 5.74,
+    "sharpe": 0.739,
+    "maxdd_pct": -14.1
+   },
+   "test": {
+    "ann_pct": 2.78,
+    "sharpe": 0.577,
+    "maxdd_pct": -4.52
+   }
+  }
+ },
+ "B": {
+  "est_mean_bp_day": [
+   8.585,
+   0.75
+  ],
+  "est_corr": -0.001,
+  "current (S 0.3%, O 2x)": {
+   "w_sonic_risk_pct": 0.3,
+   "w_overnight_x": 2.0,
+   "mc_dd95_est_pct": 15.3,
+   "est": {
+    "ann_pct": 10.27,
+    "sharpe": 1.012,
+    "maxdd_pct": -11.15
+   },
+   "test": {
+    "ann_pct": 5.57,
+    "sharpe": 0.886,
+    "maxdd_pct": -5.16
+   }
+  },
+  "kelly_frac": {
+   "w_sonic_risk_pct": 0.146,
+   "w_overnight_x": 3.305,
+   "mc_dd95_est_pct": 15.0,
+   "est": {
+    "ann_pct": 9.41,
+    "sharpe": 1.195,
+    "maxdd_pct": -12.91
+   },
+   "test": {
+    "ann_pct": 5.63,
+    "sharpe": 1.103,
+    "maxdd_pct": -5.34
+   }
+  },
+  "risk_parity": {
+   "w_sonic_risk_pct": 0.196,
+   "w_overnight_x": 3.158,
+   "mc_dd95_est_pct": 15.0,
+   "est": {
+    "ann_pct": 10.21,
+    "sharpe": 1.178,
+    "maxdd_pct": -13.09
+   },
+   "test": {
+    "ann_pct": 5.95,
+    "sharpe": 1.078,
+    "maxdd_pct": -5.56
+   }
+  },
+  "robust": {
+   "w_sonic_risk_pct": 0.119,
+   "w_overnight_x": 3.383,
+   "mc_dd95_est_pct": 15.0,
+   "est": {
+    "ann_pct": 8.96,
+    "sharpe": 1.188,
+    "maxdd_pct": -12.81
+   },
+   "test": {
+    "ann_pct": 5.44,
+    "sharpe": 1.103,
+    "maxdd_pct": -5.22
+   }
+  }
+ }
+}
