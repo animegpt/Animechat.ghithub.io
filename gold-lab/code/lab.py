@@ -16,7 +16,9 @@ SLIP = 0.1e-4
 SPEC = {"XAUUSD": dict(point=1e3, spread=0.24, swap_long=0.4316),
         "XAGUSD": dict(point=1e3, spread=0.025, swap_long=0.0),
         "EURUSD": dict(point=1e5, spread=0.00010, swap_long=0.0),
-        "BTCUSD": dict(point=1.0, spread=6.40, swap_long=0.0)}
+        "BTCUSD": dict(point=1.0, spread=6.40, swap_long=0.0),
+        "USDCNH": dict(point=1e5, spread=0.0, swap_long=0.0), "USA500IDXUSD": dict(point=1e3, spread=0.0, swap_long=0.0),
+        "USDJPY": dict(point=1e3, spread=0.0, swap_long=0.0)}   # signal-only inputs (#145)
 
 
 def _parse(path, t0, point):
