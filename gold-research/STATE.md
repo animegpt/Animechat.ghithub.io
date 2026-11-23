@@ -27,7 +27,8 @@ Prereg: `prereg/PREREGISTRATION_149_153.md` (committed before any evaluation).
   RF-reg D +0.256 t 2.28. Vault NOT opened, audit not run (only for a winner). Report: REPORT_WILLIAMS_3IND.md
 - [x] #153: Sonic fails. Overnight: 4 models pass #153 technical gates (t ~7, DSR >0.98) but Overnight is net-negative at
   Exness cost (Sharpe -1.06; sized still -0.35..-0.47) -> not tradable. Signal = short-term mean reversion (IC -0.22).
-- STUDY CLOSED. Cumulative trials after #153: 350,212. Vault untouched. No EA/Pine (no winner).
+- [x] #154 short reversal into 16:00 NY: FAIL (net1 < 0 on gold dev and silver; gross real, smaller than spread). Vault not opened.
+- STUDY CLOSED. Cumulative trials after #154: 350,214. Vault untouched. No EA/Pine (no winner).
 - Ideas for a NEW pre-registration: (a) M5 features (user request); (b) Shadow-only RF-reg sizing on Demo (no effect on
   trades); (c) gold short-horizon reversal around 15:00-16:00 NY as its own strategy (short side has no swap).
 
