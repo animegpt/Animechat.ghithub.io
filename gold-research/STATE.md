@@ -25,7 +25,11 @@ Prereg: `prereg/PREREGISTRATION_149_153.md` (committed before any evaluation).
 - RESULT: NO WINNER. 16/20 models pass D>0 both periods & t>=2 (best RF-reg 0.5-1.5: D +0.292 t 3.14/3.30), all fail
   Holm over 50,020 trials and DSR (N 350,192). Rules: best disc t 4.975 < luck threshold 4.993. Silver (descriptive):
   RF-reg D +0.256 t 2.28. Vault NOT opened, audit not run (only for a winner). Report: REPORT_WILLIAMS_3IND.md
-- [ ] #153 Sonic / Overnight (running: /home/user/lab/p153.log), then add section 8 of the report.
+- [x] #153: Sonic fails. Overnight: 4 models pass #153 technical gates (t ~7, DSR >0.98) but Overnight is net-negative at
+  Exness cost (Sharpe -1.06; sized still -0.35..-0.47) -> not tradable. Signal = short-term mean reversion (IC -0.22).
+- STUDY CLOSED. Cumulative trials after #153: 350,212. Vault untouched. No EA/Pine (no winner).
+- Ideas for a NEW pre-registration: (a) M5 features (user request); (b) Shadow-only RF-reg sizing on Demo (no effect on
+  trades); (c) gold short-horizon reversal around 15:00-16:00 NY as its own strategy (short side has no swap).
 
 If the conversation ends: "اقرأ STATE.md وكمّل".
 

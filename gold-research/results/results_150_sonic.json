@@ -1,0 +1,422 @@
+{
+ "hgb_cls_A": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 0.814,
+   "D": 0.071,
+   "t_jkm": 0.77,
+   "mean_size": 0.972,
+   "t_boot": 1.15
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.454,
+   "D": 0.049,
+   "t_jkm": 0.44,
+   "mean_size": 1.019,
+   "t_boot": 0.38
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.666,
+   "D": 0.062,
+   "t_jkm": 0.89,
+   "mean_size": 0.994,
+   "t_boot": 0.99
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.779,
+   "D": 0.049,
+   "t_jkm": 0.7,
+   "mean_size": 0.994
+  },
+  "ic_all": 0.0334
+ },
+ "hgb_cls_B": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 0.829,
+   "D": 0.086,
+   "t_jkm": 0.64,
+   "mean_size": 1.076,
+   "t_boot": 0.95
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.464,
+   "D": 0.059,
+   "t_jkm": 0.36,
+   "mean_size": 1.159,
+   "t_boot": 0.31
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.679,
+   "D": 0.075,
+   "t_jkm": 0.74,
+   "mean_size": 1.115,
+   "t_boot": 0.82
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.783,
+   "D": 0.053,
+   "t_jkm": 0.52,
+   "mean_size": 1.115
+  },
+  "ic_all": 0.0334
+ },
+ "rf_cls_A": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 0.99,
+   "D": 0.247,
+   "t_jkm": 2.19,
+   "mean_size": 0.864,
+   "t_boot": 2.57
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.39,
+   "D": -0.015,
+   "t_jkm": -0.13,
+   "mean_size": 0.977,
+   "t_boot": -0.13
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.74,
+   "D": 0.136,
+   "t_jkm": 1.65,
+   "mean_size": 0.916,
+   "t_boot": 1.82
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.85,
+   "D": 0.12,
+   "t_jkm": 1.44,
+   "mean_size": 0.916
+  },
+  "ic_all": 0.0725
+ },
+ "rf_cls_B": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 1.083,
+   "D": 0.34,
+   "t_jkm": 2.0,
+   "mean_size": 0.886,
+   "t_boot": 2.29
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.367,
+   "D": -0.038,
+   "t_jkm": -0.21,
+   "mean_size": 1.084,
+   "t_boot": -0.21
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.782,
+   "D": 0.178,
+   "t_jkm": 1.45,
+   "mean_size": 0.978,
+   "t_boot": 1.58
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.879,
+   "D": 0.149,
+   "t_jkm": 1.2,
+   "mean_size": 0.978
+  },
+  "ic_all": 0.0725
+ },
+ "l1_cls_A": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 0.884,
+   "D": 0.141,
+   "t_jkm": 1.07,
+   "mean_size": 1.023,
+   "t_boot": 1.22
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.4,
+   "D": -0.005,
+   "t_jkm": -0.04,
+   "mean_size": 1.054,
+   "t_boot": -0.05
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.679,
+   "D": 0.075,
+   "t_jkm": 0.8,
+   "mean_size": 1.038,
+   "t_boot": 0.95
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.793,
+   "D": 0.063,
+   "t_jkm": 0.66,
+   "mean_size": 1.038
+  },
+  "ic_all": 0.022
+ },
+ "l1_cls_B": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 0.91,
+   "D": 0.167,
+   "t_jkm": 0.88,
+   "mean_size": 1.165,
+   "t_boot": 0.98
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.385,
+   "D": -0.02,
+   "t_jkm": -0.11,
+   "mean_size": 1.22,
+   "t_boot": -0.15
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.685,
+   "D": 0.081,
+   "t_jkm": 0.61,
+   "mean_size": 1.191,
+   "t_boot": 0.72
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.789,
+   "D": 0.059,
+   "t_jkm": 0.44,
+   "mean_size": 1.191
+  },
+  "ic_all": 0.022
+ },
+ "et_cls_A": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 0.916,
+   "D": 0.173,
+   "t_jkm": 1.55,
+   "mean_size": 0.863,
+   "t_boot": 1.95
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.474,
+   "D": 0.069,
+   "t_jkm": 0.54,
+   "mean_size": 0.959,
+   "t_boot": 0.7
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.723,
+   "D": 0.12,
+   "t_jkm": 1.41,
+   "mean_size": 0.907,
+   "t_boot": 1.75
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.841,
+   "D": 0.111,
+   "t_jkm": 1.29,
+   "mean_size": 0.907
+  },
+  "ic_all": 0.0831
+ },
+ "et_cls_B": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 0.981,
+   "D": 0.238,
+   "t_jkm": 1.33,
+   "mean_size": 0.885,
+   "t_boot": 1.64
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.489,
+   "D": 0.084,
+   "t_jkm": 0.45,
+   "mean_size": 1.053,
+   "t_boot": 0.56
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.758,
+   "D": 0.154,
+   "t_jkm": 1.17,
+   "mean_size": 0.963,
+   "t_boot": 1.45
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.864,
+   "D": 0.134,
+   "t_jkm": 1.01,
+   "mean_size": 0.963
+  },
+  "ic_all": 0.0831
+ },
+ "ens_cls_A": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 0.951,
+   "D": 0.208,
+   "t_jkm": 1.91,
+   "mean_size": 0.882,
+   "t_boot": 2.16
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.45,
+   "D": 0.045,
+   "t_jkm": 0.36,
+   "mean_size": 0.932,
+   "t_boot": 0.38
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.743,
+   "D": 0.139,
+   "t_jkm": 1.72,
+   "mean_size": 0.905,
+   "t_boot": 1.89
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.852,
+   "D": 0.122,
+   "t_jkm": 1.5,
+   "mean_size": 0.905
+  },
+  "ic_all": 0.071
+ },
+ "ens_cls_B": {
+  "disc": {
+   "n": 773,
+   "months": 96,
+   "sh_base": 0.743,
+   "sh_sized": 1.027,
+   "D": 0.284,
+   "t_jkm": 1.73,
+   "mean_size": 0.918,
+   "t_boot": 1.9
+  },
+  "conf": {
+   "n": 668,
+   "months": 84,
+   "sh_base": 0.405,
+   "sh_sized": 0.455,
+   "D": 0.05,
+   "t_jkm": 0.27,
+   "mean_size": 1.006,
+   "t_boot": 0.28
+  },
+  "all": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.604,
+   "sh_sized": 0.787,
+   "D": 0.183,
+   "t_jkm": 1.52,
+   "mean_size": 0.959,
+   "t_boot": 1.65
+  },
+  "all_net2": {
+   "n": 1441,
+   "months": 180,
+   "sh_base": 0.73,
+   "sh_sized": 0.884,
+   "D": 0.154,
+   "t_jkm": 1.27,
+   "mean_size": 0.959
+  },
+  "ic_all": 0.071
+ }
+}
