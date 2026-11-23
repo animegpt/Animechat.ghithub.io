@@ -19,8 +19,8 @@ for (y, m) in todo:
             if len(data) == 0: raise IOError("empty")
             open(f + ".tmp", "wb").write(data); os.replace(f + ".tmp", f); print(inst, y, m, len(data), flush=True); break
         except Exception as e:
-            time.sleep(min(120, 3 * 1.5 ** k) * (0.5 + random.random()))
+            time.sleep(min(20, 2 * 1.3 ** k) * (0.5 + random.random()))
     else:
         print("FAILED", inst, y, m, flush=True)
-    time.sleep(1.0 + random.random())
+    time.sleep(0.3 + 0.5 * random.random())
 print("DONE", inst, flush=True)
