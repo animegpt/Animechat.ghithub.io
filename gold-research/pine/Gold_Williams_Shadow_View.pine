@@ -1,0 +1,314 @@
+//@version=5
+// Gold Williams #112 + three-indicator CONTEXT (research #149-#153) — FOR VIEWING ONLY. XAUUSD(c), 1h chart.
+// Trading = Williams #112 frozen: day 17:00->17:00 New York, buy stop open + 0.6 x prev range, sell stop open - 0.6 x range,
+// first touched wins, one trade per day, exit at the day close.
+// Context (computed on THIS chart's timeframe, from closed bars, same formulas as gold-research/code/ind3.py):
+//   PAC swing trend (leg 50), HyperWave (TSI-type, 50 line), SuperTrend AI (9 factors 1..5, k-means on performance),
+//   align3 = how many of the three agree with the trade (0-3),
+//   OB flag = price within 0.35 ATR(14) of an opposing INTERNAL order block (the theme of the best #151 rules).
+// IMPORTANT: this is NOT the RF model of GoldWilliams_Shadow.mq5 (300 trees x 206 features on H1/H4/D1 do not fit in Pine,
+// and TradingView H4/D1 bars are not aligned to 17:00 NY). Research verdict: indicators = weak information,
+// "probable, not proven". Nothing here changes the position size.
+strategy("Gold Williams #112 + 3-indicator context (view)", overlay = true, initial_capital = 10000, default_qty_type = strategy.percent_of_equity,
+         default_qty_value = 50, commission_type = strategy.commission.cash_per_contract, commission_value = 0.12, calc_on_every_tick = false,
+         process_orders_on_close = true, max_bars_back = 600)
+
+k = input.float(0.6, "Range multiple (frozen at 0.6)")
+showCtx = input.bool(true, "Show context labels at entries")
+showST = input.bool(true, "Plot SuperTrend AI")
+
+// ------------------------------------------------------------------ helpers (Python-identical recursions)
+myEma(float x, int n) =>
+    var float s = na
+    a = 2.0 / (n + 1)
+    s := na(s) ? x : s + a * (x - s)
+    s
+myRma(float x, int n) =>
+    var float s = na
+    s := na(s) ? x : s + (x - s) / n
+    s
+trueRange() =>
+    pc = nz(close[1], close)
+    math.max(high - low, math.max(math.abs(high - pc), math.abs(low - pc)))
+
+tr = trueRange()
+atr14 = myRma(tr, 14)
+atr10 = myRma(tr, 10)
+
+// ------------------------------------------------------------------ PAC structure (LuxAlgo leg pivots + close break)
+var int legSw = 0
+var float phSw = na
+var float plSw = na
+var bool phxSw = true
+var bool plxSw = true
+var int trendSw = 0
+if bar_index >= 50
+    hh = ta.highest(high, 50)
+    ll = ta.lowest(low, 50)
+    prevLeg = legSw
+    if high[50] > hh
+        legSw := 0
+    else if low[50] < ll
+        legSw := 1
+    if legSw != prevLeg
+        if legSw == 1
+            plSw := low[50]
+            plxSw := false
+        else
+            phSw := high[50]
+            phxSw := false
+    if not na(phSw) and not phxSw and close > phSw
+        phxSw := true
+        trendSw := 1
+    if not na(plSw) and not plxSw and close < plSw
+        plxSw := true
+        trendSw := -1
+
+// internal structure (leg 5) + internal order blocks
+var int legIn = 0
+var float phIn = na
+var float plIn = na
+var bool phxIn = true
+var bool plxIn = true
+var int phiIn = na
+var int pliIn = na
+var bullTop = array.new_float()
+var bullBtm = array.new_float()
+var bearTop = array.new_float()
+var bearBtm = array.new_float()
+if bar_index >= 5
+    hh5 = ta.highest(high, 5)
+    ll5 = ta.lowest(low, 5)
+    prev5 = legIn
+    if high[5] > hh5
+        legIn := 0
+    else if low[5] < ll5
+        legIn := 1
+    if legIn != prev5
+        if legIn == 1
+            plIn := low[5]
+            plxIn := false
+            pliIn := bar_index - 5
+        else
+            phIn := high[5]
+            phxIn := false
+            phiIn := bar_index - 5
+    if not na(phIn) and not phxIn and close > phIn
+        phxIn := true
+        if not na(phiIn) and bar_index - phiIn >= 2 and bar_index - phiIn <= 500
+            // bullish OB: bar with the lowest low between the pivot high and the break (excluding the break bar)
+            int jj = bar_index - phiIn
+            for off = bar_index - phiIn to 1
+                if low[off] < low[jj]
+                    jj := off
+            array.push(bullTop, high[jj])
+            array.push(bullBtm, low[jj])
+            if array.size(bullTop) > 5
+                array.shift(bullTop)
+                array.shift(bullBtm)
+    if not na(plIn) and not plxIn and close < plIn
+        plxIn := true
+        if not na(pliIn) and bar_index - pliIn >= 2 and bar_index - pliIn <= 500
+            int jj = bar_index - pliIn
+            for off = bar_index - pliIn to 1
+                if high[off] > high[jj]
+                    jj := off
+            array.push(bearTop, high[jj])
+            array.push(bearBtm, low[jj])
+            if array.size(bearTop) > 5
+                array.shift(bearTop)
+                array.shift(bearBtm)
+// mitigation + distances (ATR14 units): nearest bull OB top below price, nearest bear OB bottom above price
+float dBull = 10.0
+float dBear = 10.0
+if array.size(bullTop) > 0
+    for i = array.size(bullTop) - 1 to 0
+        if close < array.get(bullBtm, i)
+            array.remove(bullTop, i)
+            array.remove(bullBtm, i)
+        else
+            dBull := math.min(dBull, math.max(0.0, (close - array.get(bullTop, i)) / atr14))
+if array.size(bearTop) > 0
+    for i = array.size(bearTop) - 1 to 0
+        if close > array.get(bearTop, i)
+            array.remove(bearTop, i)
+            array.remove(bearBtm, i)
+        else
+            dBear := math.min(dBear, math.max(0.0, (array.get(bearBtm, i) - close) / atr14))
+
+// ------------------------------------------------------------------ Oscillator Matrix: HyperWave
+d = bar_index == 0 ? 0.0 : close - close[1]
+mm = myEma(myEma(d, 14), 7)
+aa = myEma(myEma(math.abs(d), 14), 7)
+hw = 50 + 50 * (aa > 0 ? mm / aa : 0.0)
+
+// ------------------------------------------------------------------ Signals & Overlays: SuperTrend AI
+var float[] fac = array.from(1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0)
+var float[] ups = array.new_float(9, na)
+var float[] dns = array.new_float(9, na)
+var int[] trs = array.new_int(9, 1)
+var float[] sts = array.new_float(9, na)
+var float[] perf = array.new_float(9, 0.0)
+var float den = 0.0
+var float fSel = 3.0
+var float upF = na
+var float dnF = na
+var int trF = 1
+hl2v = (high + low) / 2
+pa = 2.0 / 11.0
+if bar_index > 0
+    dc = close - close[1]
+    for q = 0 to 8
+        p = array.get(perf, q)
+        array.set(perf, q, p + pa * (dc * math.sign(close[1] - nz(array.get(sts, q), close[1])) - p))
+    den := den + pa * (math.abs(dc) - den)
+    srt = array.copy(perf)
+    array.sort(srt)
+    c0 = array.get(srt, 2)
+    c1 = array.get(srt, 4)
+    c2 = array.get(srt, 6)
+    lab = array.new_int(9, 0)
+    for it = 0 to 19
+        for q = 0 to 8
+            pq = array.get(perf, q)
+            b = 0
+            bd = math.abs(pq - c0)
+            if math.abs(pq - c1) < bd
+                b := 1
+                bd := math.abs(pq - c1)
+            if math.abs(pq - c2) < bd
+                b := 2
+            array.set(lab, q, b)
+        s0 = 0.0
+        s1 = 0.0
+        s2 = 0.0
+        n0 = 0
+        n1 = 0
+        n2 = 0
+        for q = 0 to 8
+            lq = array.get(lab, q)
+            pq = array.get(perf, q)
+            if lq == 0
+                s0 += pq
+                n0 += 1
+            else if lq == 1
+                s1 += pq
+                n1 += 1
+            else
+                s2 += pq
+                n2 += 1
+        nc0 = n0 > 0 ? s0 / n0 : c0
+        nc1 = n1 > 0 ? s1 / n1 : c1
+        nc2 = n2 > 0 ? s2 / n2 : c2
+        conv = math.abs(nc0 - c0) < 1e-12 and math.abs(nc1 - c1) < 1e-12 and math.abs(nc2 - c2) < 1e-12
+        if conv
+            break
+        c0 := nc0
+        c1 := nc1
+        c2 := nc2
+    best = c1 > c0 ? (c2 > c1 ? 2 : 1) : (c2 > c0 ? 2 : 0)
+    fs = 0.0
+    fn = 0
+    for q = 0 to 8
+        if array.get(lab, q) == best
+            fs += array.get(fac, q)
+            fn += 1
+    if fn > 0
+        fSel := fs / fn
+// per-factor supertrends (needed for the performance memory) and the final adaptive one
+for q = 0 to 8
+    f = array.get(fac, q)
+    u = hl2v - f * atr10
+    dd = hl2v + f * atr10
+    pu = array.get(ups, q)
+    pdn = array.get(dns, q)
+    t_ = array.get(trs, q)
+    if not na(pu)
+        u := close[1] > pu ? math.max(u, pu) : u
+        dd := close[1] < pdn ? math.min(dd, pdn) : dd
+        if t_ == 1 and close < pu
+            t_ := -1
+        else if t_ == -1 and close > pdn
+            t_ := 1
+    array.set(ups, q, u)
+    array.set(dns, q, dd)
+    array.set(trs, q, t_)
+    array.set(sts, q, t_ == 1 ? u : dd)
+uF = hl2v - fSel * atr10
+dF = hl2v + fSel * atr10
+if not na(upF)
+    uF := close[1] > upF ? math.max(uF, upF) : uF
+    dF := close[1] < dnF ? math.min(dF, dnF) : dF
+    if trF == 1 and close < upF
+        trF := -1
+    else if trF == -1 and close > dnF
+        trF := 1
+upF := uF
+dnF := dF
+stLine = trF == 1 ? upF : dnF
+plot(showST ? stLine : na, "SuperTrend AI", trF == 1 ? color.new(color.teal, 40) : color.new(color.orange, 40), 1, plot.style_linebr)
+
+// ------------------------------------------------------------------ Williams #112 (identical to Gold_Williams_Breakout.pine)
+dayStart = ta.change(time("D", "1700-1700:1234567", "America/New_York")) != 0
+var float dOpen = na
+var float pH = na
+var float pL = na
+var float cH = na
+var float cL = na
+var bool traded = false
+if dayStart
+    pH := cH
+    pL := cL
+    cH := high
+    cL := low
+    dOpen := open
+    traded := false
+else
+    cH := math.max(nz(cH, high), high)
+    cL := math.min(nz(cL, low), low)
+rng = pH - pL
+buyLvl = dOpen + k * rng
+sellLvl = dOpen - k * rng
+closeMin = hour(time_close, "America/New_York") * 60 + minute(time_close, "America/New_York")
+openMin = hour(time, "America/New_York") * 60 + minute(time, "America/New_York")
+lastBar = openMin < 1020 and closeMin >= 1020
+plot(buyLvl, "Buy level", color.new(color.green, 0), 1, plot.style_stepline)
+plot(sellLvl, "Sell level", color.new(color.red, 0), 1, plot.style_stepline)
+
+// context as of the PREVIOUS closed bar (the research uses only bars completed before the entry bar)
+ctxAlign(int side) =>
+    (trendSw[1] * side > 0 ? 1 : 0) + ((hw[1] - 50) * side > 0 ? 1 : 0) + (trF[1] * side > 0 ? 1 : 0)
+ctxOB(int side) =>
+    (side > 0 ? dBear[1] : dBull[1]) < 0.35
+
+if not traded and not na(rng) and rng > 0 and not lastBar
+    strategy.entry("L", strategy.long, stop = buyLvl, oca_name = "day", oca_type = strategy.oca.cancel)
+    strategy.entry("S", strategy.short, stop = sellLvl, oca_name = "day", oca_type = strategy.oca.cancel)
+if strategy.position_size != 0 and not traded
+    traded := true
+    if showCtx
+        side = strategy.position_size > 0 ? 1 : -1
+        al = ctxAlign(side)
+        ob = ctxOB(side)
+        txt = (side > 0 ? "BUY" : "SELL") + "\nalign " + str.tostring(al) + "/3" + (ob ? "\nopp. OB near" : "")
+        label.new(bar_index, side > 0 ? low : high, txt, style = side > 0 ? label.style_label_up : label.style_label_down,
+                  color = al >= 2 ? color.new(color.green, 20) : color.new(color.gray, 20), textcolor = color.white, size = size.small)
+if lastBar
+    strategy.cancel_all()
+    strategy.close_all(comment = "day close")
+
+// ------------------------------------------------------------------ live panel
+var table tb = table.new(position.top_right, 2, 6, border_width = 1)
+if barstate.islast
+    table.cell(tb, 0, 0, "3-indicator context (view only)", text_color = color.white, bgcolor = color.new(color.navy, 0))
+    table.cell(tb, 1, 0, timeframe.period, text_color = color.white, bgcolor = color.new(color.navy, 0))
+    table.cell(tb, 0, 1, "PAC swing trend")
+    table.cell(tb, 1, 1, trendSw > 0 ? "UP" : trendSw < 0 ? "DOWN" : "-", text_color = trendSw > 0 ? color.green : color.red)
+    table.cell(tb, 0, 2, "HyperWave")
+    table.cell(tb, 1, 2, str.tostring(hw, "#.0"), text_color = hw > 50 ? color.green : color.red)
+    table.cell(tb, 0, 3, "SuperTrend AI (f " + str.tostring(fSel, "#.##") + ")")
+    table.cell(tb, 1, 3, trF > 0 ? "UP" : "DOWN", text_color = trF > 0 ? color.green : color.red)
+    table.cell(tb, 0, 4, "align BUY / SELL")
+    table.cell(tb, 1, 4, str.tostring(ctxAlign(1)) + " / " + str.tostring(ctxAlign(-1)))
+    table.cell(tb, 0, 5, "Not the RF model - size unchanged")
+    table.cell(tb, 1, 5, "#149-153")
