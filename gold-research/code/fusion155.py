@@ -111,6 +111,11 @@ if __name__ == "__main__":
         f3["dsr_monthly"] = MT.dsr_monthly(G @ V["base"].net1.values[mm], N_DSR, VAR_SR)
         out["F3"] = f3; print("F3", json.dumps(f3, default=float))
         json.dump(out, open(f"{OUT}/results_155_silver.json", "w"), indent=1, default=float)
+    elif w == "nov":   # gold after 2026-10, descriptive; uses ONLY November bars (no vault rows loaded)
+        df = pd.read_parquet(f"{lab.CACHE}/XAUUSD_BID_nov2026.parquet"); M = lab.Mkt(df, "XAUUSD")
+        T = williams(M); V = variants(M, T); out = {"nov2026": per_period(V, "nov2026"),
+              "trades": V["base"].assign(F1=V["F1"].net1, F2=V["F2"].net1)[["t", "side", "net1", "F1", "F2"]].astype({"t": str}).to_dict("records")}
+        print(json.dumps(out, default=float)); json.dump(out, open(f"{OUT}/results_155_nov2026.json", "w"), indent=1, default=float)
     elif w == "vault":
         assert os.environ.get("VAULT_LOOK") == "1" and lab.OPEN_VAULT
         out, M, V = run("XAUUSD", True, ["vault"])
