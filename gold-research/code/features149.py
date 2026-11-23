@@ -54,9 +54,12 @@ def tf_bars(M):
     return out
 
 
-def build(inst, vault=False):
+def build(inst, vault=False, strat="williams"):
     M = lab.Mkt(lab.load_hourly(inst, vault=vault), inst)
-    T = williams(M)
+    if strat == "williams": T = williams(M)
+    else:
+        import refs
+        T = getattr(refs, strat)(M)
     T["t0"] = M.idx[T.j0.values]                       # start time of entry bar (UTC naive)
     T = T.sort_values("t0").reset_index(drop=True)
     bars = tf_bars(M); raw = {}
@@ -99,7 +102,8 @@ def make_X(R, side):
 
 if __name__ == "__main__":
     inst = sys.argv[1]; vault = len(sys.argv) > 2 and sys.argv[2] == "vault"
+    strat = sys.argv[3] if len(sys.argv) > 3 else "williams"
     os.makedirs(lab.CACHE, exist_ok=True)
-    D = build(inst, vault=vault)
-    p = f"{lab.CACHE}/feat149_{inst}{'_vault' if vault else ''}.parquet"; D.to_parquet(p)
+    D = build(inst, vault=vault, strat=strat)
+    p = f"{lab.CACHE}/feat149_{inst}{'_vault' if vault else ''}{'' if strat == 'williams' else '_' + strat}.parquet"; D.to_parquet(p)
     print(p, D.shape, "n_features", make_X(D, D.side).shape[1])

@@ -13,9 +13,11 @@ from sklearn.pipeline import make_pipeline
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lab, features149 as F, metric149 as MT
 warnings.filterwarnings("ignore")
-CACHE = lab.CACHE; OUT = f"{CACHE}/models150"; HERE = lab.HERE
+STRAT = os.environ.get("STRAT", "")          # "" = Williams; "sonic" / "overnight" for #153
+SFX = f"_{STRAT}" if STRAT else ""
+CACHE = lab.CACHE; OUT = f"{CACHE}/models150{SFX}"; HERE = lab.HERE
 TEST_YEARS = list(range(2009, 2024)); FINAL_YEAR = 2024
-MODELS = ["hgb", "rf", "l1", "et"]; TARGETS = ["cls", "reg"]
+MODELS = ["hgb", "rf", "l1", "et"]; TARGETS = ["cls"] if STRAT else ["cls", "reg"]
 
 
 def grid(model):
@@ -89,7 +91,7 @@ def pct_of(x, ref):
 
 def run():
     os.makedirs(OUT, exist_ok=True)
-    D = pd.read_parquet(f"{CACHE}/feat149_XAUUSD.parquet")
+    D = pd.read_parquet(f"{CACHE}/feat149_XAUUSD{SFX}.parquet")
     Xdf = F.make_X(D, D.side); X = Xdf.values; cols = list(Xdf.columns)
     jobs = [(Y, m, tg) for Y in TEST_YEARS + [FINAL_YEAR] for m in MODELS for tg in TARGETS]
     res = Parallel(n_jobs=4, verbose=5)(delayed(fit_year)(D, X, Y, m, tg) for Y, m, tg in jobs)
@@ -114,7 +116,7 @@ def run():
             P.loc[te, f"pct_ens_{tg}"] = pct_of(np.mean(pcts, axis=0), ens_ref)
     P.to_parquet(f"{OUT}/oos_pct.parquet")
     pickle.dump({"finals": finals, "cols": cols}, open(f"{OUT}/finals.pkl", "wb"))
-    json.dump(meta, open(f"{HERE}/results/results_150_params.json", "w"), indent=0, default=str)
+    json.dump(meta, open(f"{HERE}/results/results_150{SFX}_params.json", "w"), indent=0, default=str)
     print("saved", P.shape)
 
 
@@ -136,7 +138,7 @@ def evaluate_all():
                 r["ic_all"] = round(ic(pc, P.net1.values), 4)
                 out[name] = r
                 print(name, "D disc/conf/all", r["disc"]["D"], r["conf"]["D"], r["all"]["D"], "t", r["all"]["t_jkm"], r["all"]["t_boot"], flush=True)
-    json.dump(out, open(f"{HERE}/results/results_150.json", "w"), indent=1, default=float)
+    json.dump(out, open(f"{HERE}/results/results_150{SFX}.json", "w"), indent=1, default=float)
     return out
 
 
