@@ -4,7 +4,9 @@
 // First level touched wins, one trade per day, exit at the day's close (16:00 NY bar close).
 // Research (Dukascopy, cost 0.24/4000 + 0.2bp): 2004-16 +7.3bp/trade (t 3.2), 2017-23 +2.1bp (t 1.0), vault 2024-26 +12.4bp (t 2.75).
 strategy("Gold Williams Breakout #112", overlay = true, initial_capital = 10000, default_qty_type = strategy.percent_of_equity, default_qty_value = 50,
-         commission_type = strategy.commission.cash_per_contract, commission_value = 0.12,  // gold: 0.12 USD/oz per side = 0.24 spread; BTC: use ~3.2 USD/BTC per side calc_on_every_tick = false, process_orders_on_close = true)   // close_all fills at the last bar's close
+         commission_type = strategy.commission.cash_per_contract, commission_value = 0.12, calc_on_every_tick = false, process_orders_on_close = true)
+// commission: gold 0.12 USD/oz per side (= 0.24 spread); on BTC use about 3.2 USD per BTC per side (Exness ~6.40 USD spread)
+// process_orders_on_close = true so close_all fills at the close of the day's last bar
 k = input.float(0.6, "Range multiple (frozen at 0.6)")
 // trading-day key: NY time shifted +7h so the day starts at 17:00 NY
 nyShift = time + 7 * 3600 * 1000
