@@ -1,0 +1,42 @@
+//@version=5
+// Gold Williams volatility breakout (research #112) — FOR VIEWING. XAUUSD, 1h chart (or lower).
+// Day = 17:00 -> 17:00 New York. Buy stop at Open + 0.6 x previous day's range, sell stop at Open - 0.6 x range.
+// First level touched wins, one trade per day, exit at the day's close (16:00 NY bar close).
+// Research (Dukascopy, cost 0.24/4000 + 0.2bp): 2004-16 +7.3bp/trade (t 3.2), 2017-23 +2.1bp (t 1.0), vault 2024-26 +12.4bp (t 2.75).
+strategy("Gold Williams Breakout #112", overlay = true, initial_capital = 10000, default_qty_type = strategy.percent_of_equity, default_qty_value = 50,
+         commission_type = strategy.commission.cash_per_contract, commission_value = 0.0, calc_on_every_tick = false, process_orders_on_close = false)
+k = input.float(0.6, "Range multiple (frozen at 0.6)")
+// trading-day key: NY time shifted +7h so the day starts at 17:00 NY
+nyShift = time + 7 * 3600 * 1000
+dayStart = ta.change(time("D", "1700-1700:1234567", "America/New_York")) != 0
+var float dOpen = na
+var float pH = na
+var float pL = na
+var float cH = na
+var float cL = na
+var bool traded = false
+if dayStart
+    pH := cH
+    pL := cL
+    cH := high
+    cL := low
+    dOpen := open
+    traded := false
+else
+    cH := math.max(nz(cH, high), high)
+    cL := math.min(nz(cL, low), low)
+rng = pH - pL
+buyLvl = dOpen + k * rng
+sellLvl = dOpen - k * rng
+nyHour = hour(time, "America/New_York")
+lastBar = nyHour == 16
+plot(buyLvl, "Buy level", color.new(color.green, 0), 1, plot.style_stepline)
+plot(sellLvl, "Sell level", color.new(color.red, 0), 1, plot.style_stepline)
+if not traded and not na(rng) and rng > 0 and not lastBar
+    strategy.entry("L", strategy.long, stop = buyLvl, oca_name = "day", oca_type = strategy.oca.cancel)
+    strategy.entry("S", strategy.short, stop = sellLvl, oca_name = "day", oca_type = strategy.oca.cancel)
+if strategy.position_size != 0
+    traded := true
+if lastBar
+    strategy.cancel_all()
+    strategy.close_all(comment = "day close")

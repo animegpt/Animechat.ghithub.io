@@ -1,0 +1,32 @@
+{
+ "2012-2016": {
+  "corr_W_sonic": -0.066,
+  "corr_W_overnight": 0.007,
+  "base": {
+   "sharpe": 1.776,
+   "maxdd_pct": -6.65,
+   "ann_pct": 15.97
+  },
+  "base_plus_W": {
+   "sharpe": 1.769,
+   "maxdd_pct": -8.03,
+   "ann_pct": 17.4
+  },
+  "W_notional_x": 0.384
+ },
+ "2017-2023": {
+  "corr_W_sonic": -0.042,
+  "corr_W_overnight": -0.044,
+  "base": {
+   "sharpe": 1.045,
+   "maxdd_pct": -6.53,
+   "ann_pct": 9.89
+  },
+  "base_plus_W": {
+   "sharpe": 1.121,
+   "maxdd_pct": -8.91,
+   "ann_pct": 11.61
+  },
+  "W_notional_x": 0.537
+ }
+}
