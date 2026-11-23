@@ -24,3 +24,7 @@ Prereg: `prereg/PREREGISTRATION_149_153.md` (committed before any evaluation).
 - [ ] #149 features on real data, #150, #151, #152, report
 
 If the conversation ends: "اقرأ STATE.md وكمّل".
+
+## Next time (user request, 2026-11-23)
+- M5 timeframe test: separate new pre-registration AFTER #149-#153 is finished (Dukascopy minute data is one file per day,
+  about 60 h for 2005-2026 at the current throttle; plan a limited period).
