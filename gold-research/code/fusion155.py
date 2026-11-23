@@ -16,7 +16,8 @@ OUT = f"{lab.HERE}/results"
 P = {"2004_2016": ("2004-01-01", "2017-01-01"), "2017_2023": ("2017-01-01", "2024-01-01"),
      "2017_2022": ("2017-01-01", "2023-01-01"), "2004_2022": ("2004-01-01", "2023-01-01"),
      "2004_2023": ("2004-01-01", "2024-01-01"), "2023_2026": ("2023-01-01", "2026-11-01"),
-     "vault": ("2024-01-01", "2026-11-01"), "nov2026": ("2026-11-01", "2027-01-01")}
+     "vault": ("2024-01-01", "2026-11-01"), "nov2026": ("2026-11-01", "2027-01-01"),
+     "2011_2016": ("2011-01-01", "2017-01-01"), "2011_2022": ("2011-01-01", "2023-01-01")}
 
 
 def variants(M, T):
@@ -111,6 +112,21 @@ if __name__ == "__main__":
         f3["dsr_monthly"] = MT.dsr_monthly(G @ V["base"].net1.values[mm], N_DSR, VAR_SR)
         out["F3"] = f3; print("F3", json.dumps(f3, default=float))
         json.dump(out, open(f"{OUT}/results_155_silver.json", "w"), indent=1, default=float)
+    elif w == "silverA":   # Amendment A: valid silver years only
+        out, M, V = run("XAGUSD", True, ["2011_2016", "2017_2022", "2011_2022"])
+        Mg = lab.Mkt(lab.load_hourly("XAUUSD")); Tg = williams(Mg); f3 = {}
+        for pn in ("2011_2016", "2017_2022", "2011_2022"):
+            a, b = (pd.Timestamp(x) for x in P[pn]); X = V["base"]; r = X.net1.values[((X.t >= a) & (X.t < b)).values]
+            t, p = tstat1(r); f3[pn] = {"n": len(r), "net1_bp": round(r.mean() * 1e4, 2), "gross_bp": round(X.gross.values[((X.t >= a) & (X.t < b)).values].mean() * 1e4, 2), "t": round(t, 2), "p1": p}
+        for pn in ("2011_2016", "2017_2022"):
+            a, b = (pd.Timestamp(x) for x in P[pn])
+            g = lab.daily_pnl(Tg, days=Mg.days[(Mg.days >= a) & (Mg.days < b)]); s = lab.daily_pnl(V["base"]).reindex(g.index).fillna(0.0)
+            sh = lambda x: float(x.mean() / x.std() * np.sqrt(252)); port = g / g.std() + s / s.std()
+            f3["port_" + pn] = {"sh_gold": round(sh(g), 3), "sh_silver": round(sh(s), 3), "sh_port": round(sh(port), 3), "corr": round(float(g.corr(s)), 3)}
+        mm, G, months = MT.month_matrix(V["base"].t.values, P["2011_2022"])
+        f3["dsr_monthly"] = MT.dsr_monthly(G @ V["base"].net1.values[mm], N_DSR, VAR_SR)
+        out["F3"] = f3; print("F3", json.dumps(f3, default=float))
+        json.dump(out, open(f"{OUT}/results_155_silverA.json", "w"), indent=1, default=float)
     elif w == "nov":   # gold after 2026-10, descriptive; uses ONLY November bars (no vault rows loaded)
         df = pd.read_parquet(f"{lab.CACHE}/XAUUSD_BID_nov2026.parquet"); M = lab.Mkt(df, "XAUUSD")
         T = williams(M); V = variants(M, T); out = {"nov2026": per_period(V, "nov2026"),
