@@ -87,7 +87,7 @@ class Mkt:
         c1 = 0.5 * sp / ep + 0.5 * sp / xp + 2 * SLIP
         c2 = (sp / 4000.0 + 2 * SLIP) if self.inst == "XAUUSD" else c1
         nroll = self.roll_cum[d1] - self.roll_cum[d0]     # rollovers at the end of days d0..d1-1
-        sw = self.spec["swap_long"] * nroll / ep if side == 1 else 0.0
+        sw = self.spec["swap_long"] / 4000.0 * nroll if side == 1 else 0.0   # Amendment A: rate-based swap = 0.4316/4000 per rollover
         return c1 + sw, c2 + sw
 
 

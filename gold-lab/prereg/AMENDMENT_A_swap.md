@@ -1,0 +1,4 @@
+# Amendment A (2026-11-23, after #123-#134 were run): swap model
+- The common prereg said "longs pay 0.4316 USD/oz per rollover divided by the price". That divides today's fixed USD swap by historical prices (e.g. 415 USD in 2004) and overcharges longs ~10x in early years. Exness swap is rate-based (scales with price), so the correct historical model is a constant fraction: **0.4316/4000 = 1.079e-4 per rollover (Wednesday x3)** — the same model the earlier lab used (SWAP = 0.4316/4000).
+- Affects only strategies holding across 17:00 NY: #123-#132 (PINBALL carry, SPECTRAP no, ANTI, TD*, ICHIMOKU, KELTNER) and the Overnight reference. #133/#134 are same-day (no swap) and are unaffected.
+- #123-#132 discovery is re-run with the corrected swap; both versions are logged. No rule, parameter or gate is changed. The trial count is NOT reduced (the re-run is the same 10 trials).
