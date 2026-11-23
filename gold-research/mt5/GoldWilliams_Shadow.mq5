@@ -9,13 +9,12 @@
 //| Magic 770502. Run it INSTEAD of GoldWilliams (770501), not with. |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.01"
+#property version   "1.02"
 #property description "Williams #112 + SHADOW RF sizing (logged only, never applied). Research #149-#153: model = 'probable, not proven'."
 #property description "Logs: MQL5/Files/GoldWilliams_Shadow_trades.csv, _signals.csv, _bars.csv"
 #include <Trade/Trade.mqh>
 
 #define K_RANGE      0.6       // research rule (frozen)
-#define EXIT_NY_MIN  1018      // 16:58 New York (= research 'day close')
 
 input group "Size (actual trades - unchanged Williams)"
 input double InpLev        = 0.5;    // Notional as x equity
@@ -26,6 +25,7 @@ input int    InpHistBars   = 20000;  // H1 bars used for the features (research 
 input int    InpMinBars    = 15000;  // Min usable bars to compute (live: keep 15000; Strategy Tester parity run: e.g. 4000)
 input bool   InpDumpBars   = true;   // Write H1 bars once per trading day (overwrite; for the Python parity check)
 input group "Technical"
+input int    InpExitNYMin  = 1010;   // Day-close exit from this NY minute (1010 = 16:50). v1.02: Exness sends no ticks 16:58-17:00 NY
 input int    InpServerUTC  = 0;      // Broker server offset from UTC (Exness = 0)
 input long   InpMagic      = 770502; // Magic number
 input int    InpDeviation  = 30;     // Max deviation, points
@@ -39,7 +39,7 @@ datetime dayKey = 0;
 double   dOpen = 0, buyLvl = 0, sellLvl = 0, prevRange = 0;
 bool     tradedToday = false;
 ulong    pendClose[];
-ulong gTicket = 0; long gPosId = 0; int gSide = 0; double gLvl = 0, gEnt = 0, gVol = 0, gSpr = 0; datetime gEntT = 0;
+ulong gTicket = 0; long gPosId = 0; int gSide = 0; double gLvl = 0, gEnt = 0, gVol = 0, gSpr = 0; datetime gEntT = 0; datetime gDayKey = 0;
 // shadow results of the open trade
 bool   gStale = false;
 bool   gShOk = false; double gShPred = 0, gShPct = 0, gShSize = 1.0; string gShNote = ""; double gFeat[];
@@ -773,7 +773,7 @@ void LogTrade(datetime xT, double xPx, string why, double comm, double swap, dou
    double contract = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE), notional = gVol * contract * gEnt;
    double sigbp = gLvl > 0 ? gSide * (xPx - gLvl) / gLvl * 1e4 : 0, netbp = notional > 0 ? (profit + comm + swap) / notional * 1e4 : 0;
    int dg = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   FileWrite(hd, TimeToString(dayKey, TIME_DATE), gSide == 1 ? "BUY" : "SELL", DoubleToString(gLvl, dg), TimeToString(ToUTC(gEntT), TIME_DATE | TIME_SECONDS),
+   FileWrite(hd, TimeToString(gDayKey, TIME_DATE), gSide == 1 ? "BUY" : "SELL", DoubleToString(gLvl, dg), TimeToString(ToUTC(gEntT), TIME_DATE | TIME_SECONDS),
              DoubleToString(gEnt, dg), DoubleToString(gSide * (gEnt - gLvl), dg), DoubleToString(gSpr, dg), TimeToString(ToUTC(xT), TIME_DATE | TIME_SECONDS),
              DoubleToString(xPx, dg), why, DoubleToString(gVol, 2), DoubleToString(comm, 2), DoubleToString(swap, 2), DoubleToString(profit, 2),
              DoubleToString(sigbp, 3), DoubleToString(netbp, 3), gShOk ? "1" : "0", DoubleToString(gShPred, 8), DoubleToString(gShPct, 4),
@@ -812,10 +812,10 @@ void OnTickLogic()
       // (e.g. broker daily break), close at the first chance of the next day instead of holding forever.
       datetime posKey = TradingDayKey(ToUTC((datetime)PositionGetInteger(POSITION_TIME)));
       if(posKey != dayKey) { gStale = true; SafeClose(tk); return; }
-      if(nm >= EXIT_NY_MIN && nm < 17 * 60) SafeClose(tk);
+      if(nm >= InpExitNYMin && nm < 17 * 60) SafeClose(tk);
       return;
      }
-   if(tradedToday || dOpen <= 0 || (nm >= EXIT_NY_MIN && nm < 17 * 60)) return;
+   if(tradedToday || dOpen <= 0 || (nm >= InpExitNYMin && nm < 17 * 60)) return;
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID), ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    int side = bid >= buyLvl ? 1 : (bid <= sellLvl ? -1 : 0);
    if(side == 0) return;
@@ -829,7 +829,7 @@ void OnTickLogic()
    if(FindPos(tk) && PositionSelectByTicket(tk))
      {
       gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = side; gLvl = side == 1 ? buyLvl : sellLvl;
-      gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); gSpr = ask - bid;
+      gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); gSpr = ask - bid; gDayKey = dayKey;
       PrintFormat("Williams %s %.2f lots @ %.2f (level %.2f, open %.2f, prev range %.2f)", side == 1 ? "BUY" : "SELL", gVol, gEnt, gLvl, dOpen, prevRange);
       // SHADOW: computed AFTER the order is filled, so it can never delay or change the trade
       gShOk = false; gShSize = 1.0;
@@ -842,7 +842,7 @@ int OnInit()
    NANV = MathSqrt(-1.0);
    PrintFormat("GoldWilliams_Shadow #112 on %s | contract %.2f | magic %I64d | shadow %s (%d trees, %d features)", _Symbol,
                SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE), InpMagic, InpShadow ? "ON" : "OFF", NTREES, NFEAT);
-   ulong tk; if(FindPos(tk) && PositionSelectByTicket(tk)) { gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1; gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); tradedToday = true; }
+   ulong tk; if(FindPos(tk) && PositionSelectByTicket(tk)) { gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1; gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); gDayKey = TradingDayKey(ToUTC(gEntT)); tradedToday = true; }
    EventSetTimer(10); return INIT_SUCCEEDED;
   }
 void OnDeinit(const int reason) { EventKillTimer(); }

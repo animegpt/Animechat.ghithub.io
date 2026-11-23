@@ -5,22 +5,23 @@
 //| range, sell stop at Open - 0.6 x prev range; first touched wins, |
 //| one trade per day, exit at the day's close (16:58 NY).           |
 //| DEMO forward test first. Magic 770501. Rules are frozen.         |
-//| v1.01: safety close if a position survives its trading day       |
+//| v1.02: exit window from 16:50 NY (input; Exness: no ticks after  |
+//| 16:58). v1.01: safety close if a position survives its day.      |
 //| (missed 16:58 window, e.g. broker daily break). Logic unchanged.  |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.01"
+#property version   "1.02"
 #property description "Williams volatility breakout (#112): passed discovery 2004-16, confirmation 2017-23 (weak) and the vault 2024-26."
 #property description "Demo first. Logs every trade to MQL5/Files/GoldWilliams_trades.csv"
 #include <Trade/Trade.mqh>
 
 #define K_RANGE      0.6       // research rule (frozen)
-#define EXIT_NY_MIN  1018      // 16:58 New York: close before the 17:00 NY rollover (= research 'day close')
 
 input group "Size"
 input double InpLev        = 0.5;    // Notional as x equity (research portfolio check used ~0.4-0.5x)
 input double InpFixedLot   = 0.0;    // Fixed lot (>0 overrides)
 input group "Technical"
+input int    InpExitNYMin  = 1010;   // Day-close exit from this NY minute (1010 = 16:50). v1.02: Exness sends no ticks 16:58-17:00 NY
 input int    InpServerUTC  = 0;      // Broker server offset from UTC (Exness = 0)
 input long   InpMagic      = 770501; // Magic number
 input int    InpDeviation  = 30;     // Max deviation, points
@@ -34,7 +35,7 @@ bool     tradedToday = false;
 bool     gStale = false;
 ulong    pendClose[];
 // open trade bookkeeping
-ulong gTicket = 0; long gPosId = 0; int gSide = 0; double gLvl = 0, gEnt = 0, gVol = 0, gSpr = 0; datetime gEntT = 0;
+ulong gTicket = 0; long gPosId = 0; int gSide = 0; double gLvl = 0, gEnt = 0, gVol = 0, gSpr = 0; datetime gEntT = 0; datetime gDayKey = 0;
 
 datetime ToUTC(datetime s) { return (datetime)((long)s - (long)InpServerUTC * 3600); }
 datetime NthSundayUTC(int y, int mon, int nth, int hUTC)
@@ -123,7 +124,7 @@ void LogTrade(datetime xT, double xPx, string why, double comm, double swap, dou
    double contract = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE), notional = gVol * contract * gEnt;
    double sigbp = gLvl > 0 ? gSide * (xPx - gLvl) / gLvl * 1e4 : 0, netbp = notional > 0 ? (profit + comm + swap) / notional * 1e4 : 0;
    int dg = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   FileWrite(h, TimeToString(dayKey, TIME_DATE), gSide == 1 ? "BUY" : "SELL", DoubleToString(gLvl, dg), TimeToString(ToUTC(gEntT), TIME_DATE | TIME_SECONDS),
+   FileWrite(h, TimeToString(gDayKey, TIME_DATE), gSide == 1 ? "BUY" : "SELL", DoubleToString(gLvl, dg), TimeToString(ToUTC(gEntT), TIME_DATE | TIME_SECONDS),
              DoubleToString(gEnt, dg), DoubleToString(gSide * (gEnt - gLvl), dg), DoubleToString(gSpr, dg), TimeToString(ToUTC(xT), TIME_DATE | TIME_SECONDS),
              DoubleToString(xPx, dg), why, DoubleToString(gVol, 2), DoubleToString(comm, 2), DoubleToString(swap, 2), DoubleToString(profit, 2),
              DoubleToString(sigbp, 3), DoubleToString(netbp, 3));
@@ -159,10 +160,10 @@ void OnTickLogic()
      {
       datetime posKey = TradingDayKey(ToUTC((datetime)PositionGetInteger(POSITION_TIME)));
       if(posKey != dayKey) { gStale = true; SafeClose(tk); return; }           // v1.01 safety: never hold past the trading day
-      if(nm >= EXIT_NY_MIN && nm < 17 * 60) SafeClose(tk);                    // day close
+      if(nm >= InpExitNYMin && nm < 17 * 60) SafeClose(tk);                    // day close
       return;
      }
-   if(tradedToday || dOpen <= 0 || (nm >= EXIT_NY_MIN && nm < 17 * 60)) return;
+   if(tradedToday || dOpen <= 0 || (nm >= InpExitNYMin && nm < 17 * 60)) return;
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID), ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    int side = bid >= buyLvl ? 1 : (bid <= sellLvl ? -1 : 0);                  // research triggers on BID high/low
    if(side == 0) return;
@@ -176,7 +177,7 @@ void OnTickLogic()
    if(FindPos(tk) && PositionSelectByTicket(tk))
      {
       gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = side; gLvl = side == 1 ? buyLvl : sellLvl;
-      gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); gSpr = ask - bid;
+      gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); gSpr = ask - bid; gDayKey = dayKey;
       PrintFormat("Williams %s %.2f lots @ %.2f (level %.2f, open %.2f, prev range %.2f)", side == 1 ? "BUY" : "SELL", gVol, gEnt, gLvl, dOpen, prevRange);
      }
   }
@@ -184,7 +185,7 @@ void OnTickLogic()
 int OnInit()
   {
    PrintFormat("GoldWilliams #112 on %s | contract %.2f | magic %I64d", _Symbol, SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE), InpMagic);
-   ulong tk; if(FindPos(tk) && PositionSelectByTicket(tk)) { gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1; gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); tradedToday = true; }
+   ulong tk; if(FindPos(tk) && PositionSelectByTicket(tk)) { gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1; gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); gDayKey = TradingDayKey(ToUTC(gEntT)); tradedToday = true; }
    EventSetTimer(10); return INIT_SUCCEEDED;
   }
 void OnDeinit(const int reason) { EventKillTimer(); }

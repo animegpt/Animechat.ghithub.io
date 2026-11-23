@@ -51,3 +51,8 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   template + mt5/GoldWilliams.mq5): if the position's trading day != current day -> close at once (reason STALE_CLOSE).
   Research logic unchanged (research never holds overnight). Also InpMinBars input + shadow_compare --minbars for tester
   parity runs (tester gives ~1 year of history before the start date). Next: tester 2023-01..2025-06, InpMinBars 4000.
+- 2026-11-23 tester v1.01 (local session, 1-minute OHLC mode because real ticks hung): 419 trades 2023-01..2025-06, 389 with
+  shadow size (186 >1, 200 <1, mean 0.98). ALL 419 exits were STALE_CLOSE at 23:00-23:05 UTC (next open): Exness has NO
+  ticks 16:58-17:00 NY, so the 16:58 window never fires; 93 Friday trades held over the weekend. FIX v1.02 (both EAs):
+  exit window from InpExitNYMin = 1010 (16:50 NY, ~8 min before the research bar close); day_ny now = ENTRY trading day.
+  Parity not run yet (no Python on the PC). Next: re-run tester v1.02, check exits are 16:50-16:58 NY, then parity.
