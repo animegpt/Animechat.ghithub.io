@@ -32,9 +32,12 @@ input double InpMaxSpread  = 0.0;    // Skip entry if spread > this (USD); 0 = o
 input string InpCsvName    = "GoldWilliams_Shadow_trades.csv";
 input string InpSigName    = "GoldWilliams_Shadow_signals.csv";
 input string InpBarsName   = "GoldWilliams_Shadow_bars.csv";
+input bool   InpShadowF1   = true;   // #155 F1: log the 16:00 early-exit decision + price (never applied)
 
 CTrade trade;
 datetime dayKey = 0;
+// F1 shadow (#155, "probable, not proven"): would the 16:00 early exit have fired? LOG ONLY, never trades.
+int gF1Flag = -1; double gF1Px = 0; datetime gF1T = 0;
 double   dOpen = 0, buyLvl = 0, sellLvl = 0, prevRange = 0;
 bool     tradedToday = false;
 ulong    pendClose[];
@@ -766,7 +769,7 @@ void LogTrade(datetime xT, double xPx, string why, double comm, double swap, dou
    int hd = FileOpen(InpCsvName, FILE_READ | FILE_WRITE | FILE_CSV | FILE_ANSI | FILE_SHARE_READ, ',');
    if(hd == INVALID_HANDLE) return;
    if(FileSize(hd) == 0) FileWrite(hd, "day_ny", "side", "level", "entry_time_utc", "entry_price", "slippage", "spread", "exit_time_utc", "exit_price", "reason", "volume",
-                                      "commission", "swap", "profit", "signal_bp", "net_bp", "shadow_ok", "shadow_pred", "shadow_pct", "shadow_size", "shadow_volume");
+                                      "commission", "swap", "profit", "signal_bp", "net_bp", "shadow_ok", "shadow_pred", "shadow_pct", "shadow_size", "shadow_volume", "f1_flag", "f1_exit_time_utc", "f1_exit_price", "f1_delta_bp");
    FileSeek(hd, 0, SEEK_END);
    double contract = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE), notional = gVol * contract * gEnt;
    double sigbp = gLvl > 0 ? gSide * (xPx - gLvl) / gLvl * 1e4 : 0, netbp = notional > 0 ? (profit + comm + swap) / notional * 1e4 : 0;
@@ -775,7 +778,9 @@ void LogTrade(datetime xT, double xPx, string why, double comm, double swap, dou
              DoubleToString(gEnt, dg), DoubleToString(gSide * (gEnt - gLvl), dg), DoubleToString(gSpr, dg), TimeToString(ToUTC(xT), TIME_DATE | TIME_SECONDS),
              DoubleToString(xPx, dg), why, DoubleToString(gVol, 2), DoubleToString(comm, 2), DoubleToString(swap, 2), DoubleToString(profit, 2),
              DoubleToString(sigbp, 3), DoubleToString(netbp, 3), gShOk ? "1" : "0", DoubleToString(gShPred, 8), DoubleToString(gShPct, 4),
-             DoubleToString(gShSize, 4), DoubleToString(gVol * gShSize, 4));
+             DoubleToString(gShSize, 4), DoubleToString(gVol * gShSize, 4), IntegerToString(gF1Flag),
+             gF1T > 0 ? TimeToString(ToUTC(gF1T), TIME_DATE | TIME_SECONDS) : "", DoubleToString(gF1Px, dg),
+             DoubleToString(gF1Flag == 1 && gEnt > 0 ? gSide * (gF1Px - xPx) / gEnt * 1e4 : 0.0, 3));
    FileClose(hd);
   }
 
@@ -795,6 +800,20 @@ void FinishIfClosed()
    LogTrade(xT, xPx, why, comm, swap, profit); gTicket = 0; gPosId = 0; gSide = 0;
   }
 
+//---- #155 F1 shadow: at 16:00 NY, if entry was before 16:00 and the completed 15:00-NY H1 bar moved WITH the trade,
+//     record the price the early exit would have got (bid for long, ask for short). Never closes anything.
+void F1Shadow()
+  {
+   gF1Flag = 0; gF1T = TimeCurrent();
+   double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID), ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   gF1Px = gSide == 1 ? bid : ask;
+   datetime bt = iTime(_Symbol, PERIOD_H1, 1);                       // last COMPLETED H1 bar
+   if(bt <= 0 || NYHour(ToUTC(bt)) != 15) { gF1Flag = 2; return; }  // 2 = 15:00 bar missing / misaligned (excluded)
+   if(ToNY(ToUTC(gEntT)) >= ToNY(ToUTC(bt)) + 3600) return;          // entered during the 16:00 bar -> rule not applicable
+   double o = iOpen(_Symbol, PERIOD_H1, 1), c = iClose(_Symbol, PERIOD_H1, 1);
+   if(o > 0 && gSide * (c / o - 1.0) > 0) gF1Flag = 1;
+  }
+
 void OnTickLogic()
   {
    RetryPendingCloses(); FinishIfClosed();
@@ -805,6 +824,7 @@ void OnTickLogic()
    ulong tk;
    if(FindPos(tk))
      {
+      if(InpShadowF1 && gF1Flag < 0 && gSide != 0 && nm >= 16 * 60 && nm < 17 * 60) F1Shadow();
       if(nm >= EXIT_NY_MIN && nm < 17 * 60) SafeClose(tk);
       return;
      }
@@ -823,6 +843,7 @@ void OnTickLogic()
      {
       gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = side; gLvl = side == 1 ? buyLvl : sellLvl;
       gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); gSpr = ask - bid;
+      gF1Flag = -1; gF1Px = 0; gF1T = 0;
       PrintFormat("Williams %s %.2f lots @ %.2f (level %.2f, open %.2f, prev range %.2f)", side == 1 ? "BUY" : "SELL", gVol, gEnt, gLvl, dOpen, prevRange);
       // SHADOW: computed AFTER the order is filled, so it can never delay or change the trade
       gShOk = false; gShSize = 1.0;
