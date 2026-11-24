@@ -1,0 +1,66 @@
+//@version=5
+// Gold Williams #112 — BACKTEST ONLY (signals + optional stop, no other drawings). XAUUSD, 1h chart (or lower).
+// Rule (frozen, research #112): day 17:00->17:00 New York. Buy stop at open + 0.6 x previous day's range, sell stop at
+// open - 0.6 x range. First level touched wins, one trade per day, exit at the day close.
+// Default settings = the research rule (NO stop). The stop options were NOT part of the research -> untested.
+strategy("Gold Williams #112 Backtest", "GW BT", overlay = true, initial_capital = 10000, default_qty_type = strategy.percent_of_equity,
+         default_qty_value = 50, commission_type = strategy.commission.cash_per_contract, commission_value = 0.12,
+         calc_on_every_tick = false, process_orders_on_close = true)
+
+k        = input.float(0.6, "Range multiple (research 0.6)", step = 0.1)
+exitMin  = input.int(1010, "Day-close exit, NY minute (1010 = 16:50, as the Exness EA; 1020 = 17:00 research)", minval = 900, maxval = 1020)
+stopMode = input.string("None (research)", "Stop", options = ["None (research)", "Opposite level", "ATR multiple"])
+atrMult  = input.float(1.0, "ATR multiple (if Stop = ATR multiple)", step = 0.1)
+atrLen   = input.int(14, "ATR length (daily-range units: chart TF)")
+showStop = input.bool(true, "Show stop line")
+
+dayStart = ta.change(time("D", "1700-1700:1234567", "America/New_York")) != 0
+var float dOpen = na
+var float pH = na
+var float pL = na
+var float cH = na
+var float cL = na
+var bool traded = false
+if dayStart
+    pH := cH
+    pL := cL
+    cH := high
+    cL := low
+    dOpen := open
+    traded := false
+else
+    cH := math.max(nz(cH, high), high)
+    cL := math.min(nz(cL, low), low)
+rng = pH - pL
+buyLvl = dOpen + k * rng
+sellLvl = dOpen - k * rng
+
+openMin  = hour(time, "America/New_York") * 60 + minute(time, "America/New_York")
+closeMin = hour(time_close, "America/New_York") * 60 + minute(time_close, "America/New_York")
+lastBar  = openMin < exitMin and closeMin >= exitMin
+afterExit = openMin >= exitMin and openMin < 1020
+
+atr = ta.atr(atrLen)
+var float stopLvl = na
+
+if not traded and not na(rng) and rng > 0 and not lastBar and not afterExit
+    strategy.entry("Buy", strategy.long, stop = buyLvl, oca_name = "day", oca_type = strategy.oca.cancel)
+    strategy.entry("Sell", strategy.short, stop = sellLvl, oca_name = "day", oca_type = strategy.oca.cancel)
+
+if strategy.position_size != 0 and not traded
+    traded := true
+    isLong = strategy.position_size > 0
+    stopLvl := stopMode == "Opposite level" ? (isLong ? sellLvl : buyLvl) : stopMode == "ATR multiple" ? (isLong ? strategy.position_avg_price - atrMult * atr : strategy.position_avg_price + atrMult * atr) : na
+
+if strategy.position_size > 0 and not na(stopLvl)
+    strategy.exit("Stop L", "Buy", stop = stopLvl)
+if strategy.position_size < 0 and not na(stopLvl)
+    strategy.exit("Stop S", "Sell", stop = stopLvl)
+
+if lastBar
+    strategy.cancel_all()
+    strategy.close_all(comment = "Day close")
+if strategy.position_size == 0
+    stopLvl := na
+
+plot(showStop and strategy.position_size != 0 ? stopLvl : na, "Stop", color.new(#F23645, 0), 2, plot.style_linebr)
