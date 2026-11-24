@@ -109,3 +109,10 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   Cumulative trials 350,297. Data now in /home/user/lab/raw: US500, NASDAQ, DAX(2015+), WTI, USDJPY, EURUSD 2012+, BTC.
 - 2026-11-24 #166 (BTC Williams on ETH/SOL/XRP/LTC) PRE-REGISTERED, data downloaded (/home/user/lab/raw/CRYPTO_*),
   NOT computed: paused by the user. Resume with a small script using lab.Mkt + features149.williams per coin.
+- 2026-11-24 LOCAL RUN (user's PC, tester only): Combo v1.01 compile 0 errors / 15 harmless warnings ('n' hides global);
+  v1.00 vs v1.01 (USD 10k, 2023-01..2025-06): 904/906 deals identical, the only logic difference = 1 Overnight safety
+  exit (Good Friday 2023-04-06, no 20:00 NY bar). Combo shadow parity PASSES (Sonic n226, Overnight n197, diff 0.0,
+  features equal 1.0). Tester USC runs invalid before ~2024-04 (tester lacks USC conversion) -> use USD for tester money.
+  Live XAUUSDc history starts 2020-01 (~41k H1 bars) < ~80k needed by the Overnight shadow model -> Overnight shadow live
+  = approximate (bars_used logged); Sonic fine. Williams v1.03: compile 0/0, USD sizing 0.50x equity OK, trades = v1.02.
+  Demo XAUUSDm (Standard, 1 lot = 100 oz) with 300 USD -> lot 0.00 (cannot trade). Real account unchanged.
