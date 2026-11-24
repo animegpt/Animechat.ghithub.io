@@ -102,3 +102,8 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   ticks / GC) all find no confirmable gold edge OOS; retail EAs are backtest-only claims. Only new idea for us:
   vol-managed sizing for Williams -> #163 (prereg) V1/V2 fail (D ~0, silver negative). REPORT_EXTERNAL.md.
   Cumulative trials 350,287.
+- 2026-11-24 #165 Williams Everywhere (frozen #112, 7 markets, prereg): verdict "gold-specific" (only BTC confirms:
+  +23bp/trade t2.77, Holm 0.02, both halves +). USDJPY near miss (Holm 0.08). Gross breakout effect present widely
+  (p_time <= 0.02 in 5 markets) but costs eat it in indices/oil; EURUSD negative. Equal-vol 8-market basket Sharpe
+  0.60 < gold alone 0.73. Candidate for a NEW prereg: BTC Williams forward / clean data. REPORT_WILLIAMS_EVERYWHERE.md.
+  Cumulative trials 350,297. Data now in /home/user/lab/raw: US500, NASDAQ, DAX(2015+), WTI, USDJPY, EURUSD 2012+, BTC.
