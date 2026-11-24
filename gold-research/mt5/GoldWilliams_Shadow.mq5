@@ -9,7 +9,7 @@
 //| Magic 770502. Run it INSTEAD of GoldWilliams (770501), not with. |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.02"
+#property version   "1.03"
 #property description "Williams #112 + SHADOW RF sizing (logged only, never applied). Research #149-#153: model = 'probable, not proven'."
 #property description "Logs: MQL5/Files/GoldWilliams_Shadow_trades.csv, _signals.csv, _bars.csv"
 #include <Trade/Trade.mqh>
@@ -757,11 +757,19 @@ bool ComputeLevels(datetime nowUTC)
    dOpen = op; prevRange = ph - pl; buyLvl = op + K_RANGE * prevRange; sellLvl = op - K_RANGE * prevRange;
    return prevRange > 0;
   }
+// v1.03: value of a 1.0 price move for 1 lot, in ACCOUNT currency (USD or USC cent accounts alike), from the broker's
+// tick value. The old contract-size formula assumed a USD account and sized cent accounts 100x too large.
+double MoneyPerPricePerLot()
+  {
+   double tv = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE), ts = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(tv > 0 && ts > 0) return tv / ts;
+   return SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE);
+  }
 double LotFor(double price)
   {
    double step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP), mn = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN), mx = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    double lot = InpFixedLot;
-   if(lot <= 0) lot = AccountInfoDouble(ACCOUNT_EQUITY) * InpLev / (price * SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE));
+   if(lot <= 0) lot = AccountInfoDouble(ACCOUNT_EQUITY) * InpLev / (price * MoneyPerPricePerLot());   // notional (account ccy) = InpLev x equity
    if(step <= 0) step = 0.01; lot = MathFloor(lot / step + 1e-9) * step;
    if(lot < mn) return 0.0; if(lot > mx) lot = mx; return NormalizeDouble(lot, 2);
   }
@@ -773,7 +781,7 @@ void LogTrade(datetime xT, double xPx, string why, double comm, double swap, dou
    if(FileSize(hd) == 0) FileWrite(hd, "day_ny", "side", "level", "entry_time_utc", "entry_price", "slippage", "spread", "exit_time_utc", "exit_price", "reason", "volume",
                                       "commission", "swap", "profit", "signal_bp", "net_bp", "shadow_ok", "shadow_pred", "shadow_pct", "shadow_size", "shadow_volume", "f1_flag", "f1_exit_time_utc", "f1_exit_price", "f1_delta_bp");
    FileSeek(hd, 0, SEEK_END);
-   double contract = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE), notional = gVol * contract * gEnt;
+   double notional = gVol * MoneyPerPricePerLot() * gEnt;   // v1.03: account currency, so net_bp is right on cent accounts too
    double sigbp = gLvl > 0 ? gSide * (xPx - gLvl) / gLvl * 1e4 : 0, netbp = notional > 0 ? (profit + comm + swap) / notional * 1e4 : 0;
    int dg = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    FileWrite(hd, TimeToString(gDayKey, TIME_DATE), gSide == 1 ? "BUY" : "SELL", DoubleToString(gLvl, dg), TimeToString(ToUTC(gEntT), TIME_DATE | TIME_SECONDS),
@@ -863,6 +871,10 @@ int OnInit()
    NANV = MathSqrt(-1.0);
    PrintFormat("GoldWilliams_Shadow #112 on %s | contract %.2f | magic %I64d | shadow %s (%d trees, %d features)", _Symbol,
                SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE), InpMagic, InpShadow ? "ON" : "OFF", NTREES, NFEAT);
+   { double px0 = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+     PrintFormat("Sizing check: account %s | equity %.2f | 1.0 price move x 1 lot = %.4f %s | lot now = %.2f (notional %.2f = %.2fx equity)",
+                 AccountInfoString(ACCOUNT_CURRENCY), AccountInfoDouble(ACCOUNT_EQUITY), MoneyPerPricePerLot(), AccountInfoString(ACCOUNT_CURRENCY),
+                 LotFor(px0), LotFor(px0) * MoneyPerPricePerLot() * px0, AccountInfoDouble(ACCOUNT_EQUITY) > 0 ? LotFor(px0) * MoneyPerPricePerLot() * px0 / AccountInfoDouble(ACCOUNT_EQUITY) : 0.0); }
    ulong tk; if(FindPos(tk) && PositionSelectByTicket(tk)) { gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1; gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); gDayKey = TradingDayKey(ToUTC(gEntT)); tradedToday = true; }
    EventSetTimer(10); return INIT_SUCCEEDED;
   }

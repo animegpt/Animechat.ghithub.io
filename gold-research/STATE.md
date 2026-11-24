@@ -70,3 +70,10 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   (b) silver 2004-2010 from another source, (c) M5 exit minute.
 - Gold 2026-11 (descriptive): `python code/nov2026.py download && python code/nov2026.py build && python code/fusion155.py nov`.
 If the conversation ends: "اقرأ STATE.md وكمّل".
+- 2026-11-24 local tester v1.02+F1 (merged EA, 1-minute OHLC, 2023-01..2025-06, USD deposit): compile 0/0 both EAs.
+  PARITY PASSED: 388 trades checked, size diff 0.0, all 206 features equal (MQL5 port == research code).
+  Exits: 411/418 at 16:50-16:58 NY; 7 STALE_CLOSE on US holidays / early closes (Juneteenth, Memorial Day, Black Friday);
+  2 Black-Friday trades held over the weekend (57 h, 69 h) - known, accepted (1.7% of trades). F1 (descriptive):
+  flag 1 = 208, mean f1_delta +0.20 bp (median -0.30) ~ 0. Shadow: 388 ok (186 >1, 199 <1). Trades identical to v1.02.
+  BUG: with a USC (cent) deposit the lot was 100x too large (account blown 2025-04-03). FIX v1.03 (both EAs): lot and
+  net_bp from SYMBOL_TRADE_TICK_VALUE/TICK_SIZE (account currency) + "Sizing check" line printed at start.
