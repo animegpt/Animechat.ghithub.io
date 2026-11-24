@@ -1,0 +1,129 @@
+//@version=5
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  GOLD OSCILLATOR MATRIX  —  HyperWave • Money Flow • Confluence • Divergences ║
+// ║  companion pane of "Gold Williams Pro"                      (gold-research)    ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+// Same formulas as research code/ind3.py (osc):
+//   HyperWave = 50 + 50 * EMA7(EMA14(Δclose)) / EMA7(EMA14(|Δclose|))   signal = SMA3   zones 80 / 20
+//   Money Flow = SMA6(MFI14 on hlc3 x volume) - 50
+//   Confluence = ((HW-50)/50 + (MF-50)/50) / 2   (-1..+1)
+//   Reversal marks = HW crosses its signal below 30 (bull) / above 70 (bear)
+//   Divergences = price pivot (5/5) higher high with lower HW (bear), lower low with higher HW (bull)
+// Context only - research verdict for sizing Williams with these: "probable, not proven".
+indicator("Gold Oscillator Matrix", "GW Osc", overlay = false, max_labels_count = 300, max_lines_count = 300)
+
+G_H = "HyperWave"
+showHW   = input.bool(true, "HyperWave + signal", group = G_H)
+showRev  = input.bool(true, "Reversal marks", group = G_H)
+showX50  = input.bool(false, "50-line crosses", group = G_H)
+G_M = "Money Flow"
+showMF   = input.bool(true, "Money Flow area", group = G_M)
+G_C = "Confluence"
+showConf = input.bool(true, "Confluence ribbon (bottom)", group = G_C)
+G_D = "Divergences"
+showDiv  = input.bool(true, "Show divergences", group = G_D)
+divLen   = input.int(5, "Pivot length", minval = 2, maxval = 20, group = G_D)
+G_S = "Style"
+cBull    = input.color(#089981, "Bull", group = G_S, inline = "c")
+cBear    = input.color(#F23645, "Bear", group = G_S, inline = "c")
+cNeu     = input.color(#787B86, "Neutral", group = G_S, inline = "c")
+cGold    = input.color(#E3B341, "Accent", group = G_S, inline = "c")
+
+f_ema(float x, int n) =>
+    var float s = na
+    s := na(s) ? x : s + 2.0 / (n + 1) * (x - s)
+    s
+
+// ── HyperWave
+d  = bar_index == 0 ? 0.0 : close - close[1]
+m  = f_ema(f_ema(d, 14), 7)
+a  = f_ema(f_ema(math.abs(d), 14), 7)
+hw = 50 + 50 * (a > 0 ? m / a : 0.0)
+sg = ta.sma(hw, 3)
+sg := na(sg) ? hw : sg
+
+// ── Money Flow (MFI on hlc3 x volume, research version)
+tp  = hlc3
+dtp = bar_index == 0 ? 0.0 : tp - tp[1]
+vv  = math.max(nz(volume), 1e-9)
+pos = math.sum(dtp > 0 ? tp * vv : 0.0, 14)
+neg = math.sum(dtp < 0 ? tp * vv : 0.0, 14)
+mfi = 100 * nz(pos) / math.max(nz(pos) + nz(neg), 1e-12)
+mf  = ta.sma(mfi, 6)
+
+// ── Confluence
+conf = ((hw - 50) / 50 + (nz(mf, 50) - 50) / 50) / 2
+agree = hw > 50 and mf > 50 ? 1 : hw < 50 and mf < 50 ? -1 : 0
+
+// ── levels / zones
+h80 = hline(80, "Overbought", color.new(cBear, 60), hline.style_dotted)
+h50 = hline(50, "Mid", color.new(cNeu, 50), hline.style_dashed)
+h20 = hline(20, "Oversold", color.new(cBull, 60), hline.style_dotted)
+h100 = hline(100, "Top", color.new(cNeu, 100))
+h0 = hline(0, "Bottom", color.new(cNeu, 100))
+fill(h80, h100, color.new(cBear, 93), "OB zone")
+fill(h0, h20, color.new(cBull, 93), "OS zone")
+
+// ── Money Flow area (centred on 50)
+pMF  = plot(showMF ? 50 + nz(mf, 50) - 50 : na, "Money Flow", color.new(nz(mf, 50) > 50 ? cBull : cBear, 40), 1)
+pMid = plot(showMF ? 50 : na, "MF base", display = display.none)
+fill(pMF, pMid, showMF ? color.new(nz(mf, 50) > 50 ? cBull : cBear, 80) : na, "Money Flow fill")
+
+// ── HyperWave with gradient
+hwCol = color.from_gradient(hw, 20, 80, cBear, cBull)
+pHW = plot(showHW ? hw : na, "HyperWave", hwCol, 2)
+pSG = plot(showHW ? sg : na, "Signal", color.new(cGold, 30), 1)
+fill(pHW, pSG, showHW ? color.new(hw > sg ? cBull : cBear, 75) : na, "Wave vs signal")
+
+// ── reversal marks + 50 crosses
+xu = ta.crossover(hw, sg) and hw < 30
+xd = ta.crossunder(hw, sg) and hw > 70
+plotshape(showRev and xu ? hw : na, "Bullish reversal", shape.circle, location.absolute, cBull, size = size.tiny)
+plotshape(showRev and xd ? hw : na, "Bearish reversal", shape.circle, location.absolute, cBear, size = size.tiny)
+plotshape(showX50 and ta.crossover(hw, 50) ? 50 : na, "Cross up 50", shape.triangleup, location.absolute, cBull, size = size.tiny)
+plotshape(showX50 and ta.crossunder(hw, 50) ? 50 : na, "Cross down 50", shape.triangledown, location.absolute, cBear, size = size.tiny)
+
+// ── confluence ribbon at the bottom (0-6 band)
+confCol = color.from_gradient(conf, -0.6, 0.6, cBear, cBull)
+plot(showConf ? 3 : na, "Confluence", color.new(confCol, agree == 0 ? 60 : 0), 6, plot.style_linebr)
+
+// ── divergences (price pivots vs HyperWave at the pivot bar)
+ph = ta.pivothigh(high, divLen, divLen)
+pl = ta.pivotlow(low, divLen, divLen)
+var float lph = na
+var float lphw = na
+var int lphb = na
+var float lpl = na
+var float lplw = na
+var int lplb = na
+if not na(ph)
+    hwp = hw[divLen]
+    if showDiv and not na(lph) and ph > lph and hwp < lphw
+        line.new(lphb, lphw, bar_index - divLen, hwp, color = cBear, width = 2)
+        label.new(bar_index - divLen, hwp, "Bear Div", style = label.style_label_down, color = color.new(cBear, 100), textcolor = cBear, size = size.tiny)
+    lph := ph
+    lphw := hwp
+    lphb := bar_index - divLen
+if not na(pl)
+    hwp = hw[divLen]
+    if showDiv and not na(lpl) and pl < lpl and hwp > lplw
+        line.new(lplb, lplw, bar_index - divLen, hwp, color = cBull, width = 2)
+        label.new(bar_index - divLen, hwp, "Bull Div", style = label.style_label_up, color = color.new(cBull, 100), textcolor = cBull, size = size.tiny)
+    lpl := pl
+    lplw := hwp
+    lplb := bar_index - divLen
+
+// ── mini legend
+var table tb = table.new(position.top_right, 2, 4, bgcolor = color.new(#131722, 10), border_color = color.new(cNeu, 70), border_width = 1)
+if barstate.islast
+    table.cell(tb, 0, 0, "OSC MATRIX", text_color = cGold, text_size = size.small)
+    table.cell(tb, 1, 0, "", text_size = size.small)
+    table.cell(tb, 0, 1, "HyperWave", text_color = color.white, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 1, str.tostring(hw, "#.0"), text_color = hw > 50 ? cBull : cBear, text_size = size.small)
+    table.cell(tb, 0, 2, "Money Flow", text_color = color.white, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 2, str.tostring(nz(mf, 50) - 50, "+#.0;-#.0"), text_color = nz(mf, 50) > 50 ? cBull : cBear, text_size = size.small)
+    table.cell(tb, 0, 3, "Confluence", text_color = color.white, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 3, agree > 0 ? "Bull" : agree < 0 ? "Bear" : "Mixed", text_color = agree > 0 ? cBull : agree < 0 ? cBear : cNeu, text_size = size.small)
+
+alertcondition(xu, "HyperWave bullish reversal", "HyperWave bullish reversal (cross up below 30)")
+alertcondition(xd, "HyperWave bearish reversal", "HyperWave bearish reversal (cross down above 70)")

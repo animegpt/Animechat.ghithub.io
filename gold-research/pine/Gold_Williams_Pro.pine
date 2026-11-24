@@ -1,0 +1,514 @@
+//@version=5
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  GOLD WILLIAMS PRO  —  Williams #112 + Price Action Concepts + SuperTrend AI  ║
+// ║  + Reversal Bands + F1 early-exit marker + dashboard        (gold-research)    ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+// Trading = Williams #112 (frozen): day 17:00->17:00 New York, buy stop open + 0.6 x prev range, sell stop open - 0.6 x
+// prev range, first touched wins, one trade per day, exit at the day close. XAUUSD, 1h chart (works on lower TFs too).
+// Indicators = re-implementation used in research #149-#153 (code/ind3.py), drawn LuxAlgo-style. Context only:
+// research verdict for sizing with them = "probable, not proven". F1 (#155) = 16:00 early exit when the 15:00 bar moved
+// with the trade: "probable, not proven" -> shown as a marker + statistics, never traded here.
+strategy("Gold Williams Pro", "GW Pro", overlay = true, initial_capital = 10000, default_qty_type = strategy.percent_of_equity,
+         default_qty_value = 50, commission_type = strategy.commission.cash_per_contract, commission_value = 0.12,
+         calc_on_every_tick = false, process_orders_on_close = true, max_bars_back = 600,
+         max_lines_count = 500, max_labels_count = 500, max_boxes_count = 500)
+
+// ═════════════════════════════════════════════════════════════════ inputs
+G_W = "Williams #112"
+k          = input.float(0.6, "Range multiple (frozen 0.6)", group = G_W)
+showLvls   = input.bool(true, "Show buy / sell levels", group = G_W)
+showF1     = input.bool(true, "Show F1 early-exit marker (16:00 NY)", group = G_W)
+
+G_S = "Price Action Concepts"
+showSwing  = input.bool(true, "Swing structure (50)", group = G_S, inline = "s")
+showInt    = input.bool(true, "Internal structure (5)", group = G_S, inline = "s")
+swingLen   = input.int(50, "Swing length", minval = 10, group = G_S)
+showSweep  = input.bool(true, "Liquidity sweeps", group = G_S)
+showEQ     = input.bool(true, "EQH / EQL", group = G_S)
+showPD     = input.bool(true, "Premium / Discount zones", group = G_S)
+
+G_OB = "Order Blocks"
+showOBi    = input.bool(true, "Internal OBs", group = G_OB, inline = "o")
+showOBs    = input.bool(true, "Swing OBs", group = G_OB, inline = "o")
+obKeep     = input.int(5, "Max OBs per type", minval = 1, maxval = 20, group = G_OB)
+
+G_F = "Fair Value Gaps"
+showFVG    = input.bool(true, "Show FVGs", group = G_F)
+fvgKeep    = input.int(10, "Max FVGs per side", minval = 1, maxval = 30, group = G_F)
+
+G_ST = "SuperTrend AI"
+showST     = input.bool(true, "Show SuperTrend AI", group = G_ST)
+showSTsig  = input.bool(true, "Show flip signals + strength", group = G_ST)
+
+G_RB = "Reversal Bands"
+showRB     = input.bool(true, "Show reversal bands", group = G_RB)
+
+G_D = "Dashboard"
+showDash   = input.bool(true, "Show dashboard", group = G_D)
+dashPos    = input.string("Top Right", "Position", options = ["Top Right", "Bottom Right", "Top Left", "Bottom Left"], group = G_D)
+
+G_C = "Style"
+cBull      = input.color(#089981, "Bull", group = G_C, inline = "c")
+cBear      = input.color(#F23645, "Bear", group = G_C, inline = "c")
+cNeu       = input.color(#787B86, "Neutral", group = G_C, inline = "c")
+cGold      = input.color(#E3B341, "Accent", group = G_C, inline = "c")
+
+// ═════════════════════════════════════════════════════════════════ helpers (Python-identical recursions)
+f_ema(float x, int n) =>
+    var float s = na
+    s := na(s) ? x : s + 2.0 / (n + 1) * (x - s)
+    s
+f_rma(float x, int n) =>
+    var float s = na
+    s := na(s) ? x : s + (x - s) / n
+    s
+trv = math.max(high - low, math.max(math.abs(high - nz(close[1], close)), math.abs(low - nz(close[1], close))))
+atr14  = f_rma(trv, 14)
+atr10  = f_rma(trv, 10)
+atr200 = f_rma(trv, 200)
+
+// ═════════════════════════════════════════════════════════════════ PAC structure
+// returns [trend, bullEvent, bearEvent, pivotHigh, pivotLow, pivotHighBar, pivotLowBar, sweepBull, sweepBear]
+// event codes: 0 none, 1 BOS, 2 CHoCH, 3 CHoCH+
+f_structure(int len, bool internal, bool show) =>
+    var int leg = 0
+    var float ph = na
+    var float pl = na
+    var float phPrev = na
+    var float plPrev = na
+    var int phBar = na
+    var int plBar = na
+    var bool phx = true
+    var bool plx = true
+    var int trend = 0
+    int bullEv = 0
+    int bearEv = 0
+    hh = ta.highest(high, len)
+    ll = ta.lowest(low, len)
+    phOld = ph
+    plOld = pl
+    if bar_index >= len
+        prevLeg = leg
+        if high[len] > hh
+            leg := 0
+        else if low[len] < ll
+            leg := 1
+        if leg != prevLeg
+            if leg == 1
+                plPrev := pl
+                pl := low[len]
+                plx := false
+                plBar := bar_index - len
+            else
+                phPrev := ph
+                ph := high[len]
+                phx := false
+                phBar := bar_index - len
+        if not na(ph) and not phx and close > ph
+            phx := true
+            bullEv := trend == -1 ? (not na(plPrev) and pl > plPrev ? 3 : 2) : 1
+            trend := 1
+            if show
+                txt = bullEv == 1 ? "BOS" : bullEv == 2 ? "CHoCH" : "CHoCH+"
+                line.new(phBar, ph, bar_index, ph, color = cBull, style = internal ? line.style_dashed : line.style_solid, width = internal ? 1 : 2)
+                label.new(int(math.round((phBar + bar_index) / 2)), ph, txt, style = label.style_label_down, color = color.new(cBull, 100),
+                          textcolor = cBull, size = internal ? size.tiny : size.small)
+        if not na(pl) and not plx and close < pl
+            plx := true
+            bearEv := trend == 1 ? (not na(phPrev) and ph < phPrev ? 3 : 2) : 1
+            trend := -1
+            if show
+                txt = bearEv == 1 ? "BOS" : bearEv == 2 ? "CHoCH" : "CHoCH+"
+                line.new(plBar, pl, bar_index, pl, color = cBear, style = internal ? line.style_dashed : line.style_solid, width = internal ? 1 : 2)
+                label.new(int(math.round((plBar + bar_index) / 2)), pl, txt, style = label.style_label_up, color = color.new(cBear, 100),
+                          textcolor = cBear, size = internal ? size.tiny : size.small)
+    sweepBear = not na(phOld) and high > phOld and close < phOld
+    sweepBull = not na(plOld) and low < plOld and close > plOld
+    [trend, bullEv, bearEv, ph, pl, phBar, plBar, sweepBull, sweepBear]
+
+[trSw, bullSw, bearSw, phSw, plSw, phBarSw, plBarSw, swpBullSw, swpBearSw] = f_structure(swingLen, false, showSwing)
+[trIn, bullIn, bearIn, phIn, plIn, phBarIn, plBarIn, swpBullIn, swpBearIn] = f_structure(5, true, showInt)
+
+if showSweep and swpBullSw
+    label.new(bar_index, low, "✕", style = label.style_label_up, color = color.new(cBull, 100), textcolor = cBull, size = size.small, tooltip = "Liquidity sweep (swing low)")
+if showSweep and swpBearSw
+    label.new(bar_index, high, "✕", style = label.style_label_down, color = color.new(cBear, 100), textcolor = cBear, size = size.small, tooltip = "Liquidity sweep (swing high)")
+
+// ═════════════════════════════════════════════════════════════════ Order Blocks
+var box[] obBI = array.new_box()
+var box[] obSI = array.new_box()
+var box[] obBS = array.new_box()
+var box[] obSS = array.new_box()
+// also keep numeric levels for the opposing-OB distance (internal OBs, research feature)
+var float[] obBItop = array.new_float()
+var float[] obBIbtm = array.new_float()
+var float[] obSItop = array.new_float()
+var float[] obSIbtm = array.new_float()
+
+f_newOB(box[] arr, float[] tops, float[] btms, bool bull, int pivBar, bool show, bool internal) =>
+    span = bar_index - pivBar
+    if not na(pivBar) and span >= 2 and span <= 500
+        int jj = span
+        for off = span to 1
+            if bull ? low[off] < low[jj] : high[off] > high[jj]
+                jj := off
+        t = high[jj]
+        b = low[jj]
+        array.push(tops, t)
+        array.push(btms, b)
+        bx = show ? box.new(bar_index - jj, t, bar_index, b, border_color = color.new(bull ? cBull : cBear, internal ? 60 : 20),
+                    bgcolor = color.new(bull ? cBull : cBear, internal ? 88 : 80), extend = extend.none,
+                    text = internal ? "" : (bull ? "Bull OB" : "Bear OB"), text_color = color.new(bull ? cBull : cBear, 20),
+                    text_size = size.tiny, text_halign = text.align_right) : na
+        array.push(arr, bx)
+        if array.size(arr) > obKeep
+            box.delete(array.shift(arr))
+            array.shift(tops)
+            array.shift(btms)
+
+f_maintainOB(box[] arr, float[] tops, float[] btms, bool bull) =>
+    float dist = 10.0
+    int n = array.size(arr)
+    if n > 0
+        for i = n - 1 to 0
+            t = array.get(tops, i)
+            b = array.get(btms, i)
+            mitigated = bull ? close < b : close > t
+            if mitigated
+                box.delete(array.get(arr, i))
+                array.remove(arr, i)
+                array.remove(tops, i)
+                array.remove(btms, i)
+            else
+                box.set_right(array.get(arr, i), bar_index + 5)
+                d = bull ? (close - t) / atr14 : (b - close) / atr14
+                dist := math.min(dist, math.max(0.0, d))
+    dist
+
+var float[] dTop = array.new_float()
+var float[] dBtm = array.new_float()
+var float[] dTop2 = array.new_float()
+var float[] dBtm2 = array.new_float()
+if bullIn > 0
+    f_newOB(obBI, obBItop, obBIbtm, true, phBarIn, showOBi, true)
+if bearIn > 0
+    f_newOB(obSI, obSItop, obSIbtm, false, plBarIn, showOBi, true)
+if bullSw > 0
+    f_newOB(obBS, dTop, dBtm, true, phBarSw, showOBs, false)
+if bearSw > 0
+    f_newOB(obSS, dTop2, dBtm2, false, plBarSw, showOBs, false)
+dBullIn = f_maintainOB(obBI, obBItop, obBIbtm, true)
+dBearIn = f_maintainOB(obSI, obSItop, obSIbtm, false)
+f_maintainOB(obBS, dTop, dBtm, true)
+f_maintainOB(obSS, dTop2, dBtm2, false)
+
+// ═════════════════════════════════════════════════════════════════ Fair Value Gaps
+var box[] fvgB = array.new_box()
+var box[] fvgS = array.new_box()
+if showFVG and bar_index > 2
+    if low > high[2] and close[1] > high[2]
+        array.push(fvgB, box.new(bar_index - 2, low, bar_index + 5, high[2], border_color = color.new(cBull, 100), bgcolor = color.new(cBull, 85),
+                                 text = "FVG", text_color = color.new(cBull, 40), text_size = size.tiny, text_halign = text.align_right))
+        if array.size(fvgB) > fvgKeep
+            box.delete(array.shift(fvgB))
+    if high < low[2] and close[1] < low[2]
+        array.push(fvgS, box.new(bar_index - 2, low[2], bar_index + 5, high, border_color = color.new(cBear, 100), bgcolor = color.new(cBear, 85),
+                                 text = "FVG", text_color = color.new(cBear, 40), text_size = size.tiny, text_halign = text.align_right))
+        if array.size(fvgS) > fvgKeep
+            box.delete(array.shift(fvgS))
+if array.size(fvgB) > 0
+    for i = array.size(fvgB) - 1 to 0
+        bx = array.get(fvgB, i)
+        if low <= box.get_bottom(bx)
+            box.delete(bx)
+            array.remove(fvgB, i)
+        else
+            box.set_right(bx, bar_index + 5)
+if array.size(fvgS) > 0
+    for i = array.size(fvgS) - 1 to 0
+        bx = array.get(fvgS, i)
+        if high >= box.get_top(bx)
+            box.delete(bx)
+            array.remove(fvgS, i)
+        else
+            box.set_right(bx, bar_index + 5)
+
+// ═════════════════════════════════════════════════════════════════ EQH / EQL
+pvh = ta.pivothigh(high, 3, 3)
+pvl = ta.pivotlow(low, 3, 3)
+var float lastPH = na
+var int lastPHbar = na
+var float lastPL = na
+var int lastPLbar = na
+if not na(pvh)
+    if showEQ and not na(lastPH) and math.abs(pvh - lastPH) < 0.1 * atr200
+        line.new(lastPHbar, lastPH, bar_index - 3, pvh, color = cBear, style = line.style_dotted, width = 1)
+        label.new(int(math.round((lastPHbar + bar_index - 3) / 2)), math.max(pvh, lastPH), "EQH", style = label.style_label_down,
+                  color = color.new(cBear, 100), textcolor = cBear, size = size.tiny)
+    lastPH := pvh
+    lastPHbar := bar_index - 3
+if not na(pvl)
+    if showEQ and not na(lastPL) and math.abs(pvl - lastPL) < 0.1 * atr200
+        line.new(lastPLbar, lastPL, bar_index - 3, pvl, color = cBull, style = line.style_dotted, width = 1)
+        label.new(int(math.round((lastPLbar + bar_index - 3) / 2)), math.min(pvl, lastPL), "EQL", style = label.style_label_up,
+                  color = color.new(cBull, 100), textcolor = cBull, size = size.tiny)
+    lastPL := pvl
+    lastPLbar := bar_index - 3
+
+// ═════════════════════════════════════════════════════════════════ Premium / Discount (swing range)
+var box pBox = na
+var box eBox = na
+var box dBox = na
+if showPD and barstate.islast and not na(phSw) and not na(plSw) and phSw > plSw
+    rngPD = phSw - plSw
+    left = math.min(nz(phBarSw, bar_index), nz(plBarSw, bar_index))
+    box.delete(pBox)
+    box.delete(eBox)
+    box.delete(dBox)
+    pBox := box.new(left, phSw, bar_index + 20, phSw - 0.05 * rngPD, border_color = color.new(cBear, 100), bgcolor = color.new(cBear, 88),
+                    text = "Premium", text_color = color.new(cBear, 30), text_size = size.small, text_halign = text.align_right)
+    eBox := box.new(left, plSw + 0.525 * rngPD, bar_index + 20, plSw + 0.475 * rngPD, border_color = color.new(cNeu, 100), bgcolor = color.new(cNeu, 88),
+                    text = "Equilibrium", text_color = color.new(cNeu, 20), text_size = size.small, text_halign = text.align_right)
+    dBox := box.new(left, plSw + 0.05 * rngPD, bar_index + 20, plSw, border_color = color.new(cBull, 100), bgcolor = color.new(cBull, 88),
+                    text = "Discount", text_color = color.new(cBull, 30), text_size = size.small, text_halign = text.align_right)
+
+// ═════════════════════════════════════════════════════════════════ HyperWave (for the dashboard / alignment)
+dd = bar_index == 0 ? 0.0 : close - close[1]
+mm = f_ema(f_ema(dd, 14), 7)
+aa = f_ema(f_ema(math.abs(dd), 14), 7)
+hw = 50 + 50 * (aa > 0 ? mm / aa : 0.0)
+
+// ═════════════════════════════════════════════════════════════════ SuperTrend AI (k-means on 9 factors)
+var float[] fac  = array.from(1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0)
+var float[] ups  = array.new_float(9, na)
+var float[] dns  = array.new_float(9, na)
+var int[]   trs  = array.new_int(9, 1)
+var float[] sts  = array.new_float(9, na)
+var float[] perf = array.new_float(9, 0.0)
+var float den = 0.0
+var float fSel = 3.0
+var float strength = 0.0
+var float upF = na
+var float dnF = na
+var int trF = 1
+hl2v = (high + low) / 2
+pa = 2.0 / 11.0
+if bar_index > 0
+    dc = close - close[1]
+    for q = 0 to 8
+        p = array.get(perf, q)
+        array.set(perf, q, p + pa * (dc * math.sign(close[1] - nz(array.get(sts, q), close[1])) - p))
+    den := den + pa * (math.abs(dc) - den)
+    srt = array.copy(perf)
+    array.sort(srt)
+    c0 = array.get(srt, 2)
+    c1 = array.get(srt, 4)
+    c2 = array.get(srt, 6)
+    lab = array.new_int(9, 0)
+    for it = 0 to 19
+        for q = 0 to 8
+            pq = array.get(perf, q)
+            b = 0
+            bd = math.abs(pq - c0)
+            if math.abs(pq - c1) < bd
+                b := 1
+                bd := math.abs(pq - c1)
+            if math.abs(pq - c2) < bd
+                b := 2
+            array.set(lab, q, b)
+        s0 = 0.0
+        s1 = 0.0
+        s2 = 0.0
+        n0 = 0
+        n1 = 0
+        n2 = 0
+        for q = 0 to 8
+            lq = array.get(lab, q)
+            pq = array.get(perf, q)
+            if lq == 0
+                s0 += pq
+                n0 += 1
+            else if lq == 1
+                s1 += pq
+                n1 += 1
+            else
+                s2 += pq
+                n2 += 1
+        nc0 = n0 > 0 ? s0 / n0 : c0
+        nc1 = n1 > 0 ? s1 / n1 : c1
+        nc2 = n2 > 0 ? s2 / n2 : c2
+        if math.abs(nc0 - c0) < 1e-12 and math.abs(nc1 - c1) < 1e-12 and math.abs(nc2 - c2) < 1e-12
+            break
+        c0 := nc0
+        c1 := nc1
+        c2 := nc2
+    best = c1 > c0 ? (c2 > c1 ? 2 : 1) : (c2 > c0 ? 2 : 0)
+    cb = best == 0 ? c0 : best == 1 ? c1 : c2
+    fs = 0.0
+    fn = 0
+    for q = 0 to 8
+        if array.get(lab, q) == best
+            fs += array.get(fac, q)
+            fn += 1
+    if fn > 0
+        fSel := fs / fn
+    strength := den > 0 ? math.min(10.0, math.max(cb, 0.0) / den * 10) : 0.0
+for q = 0 to 8
+    f = array.get(fac, q)
+    u = hl2v - f * atr10
+    d2 = hl2v + f * atr10
+    pu = array.get(ups, q)
+    pdn = array.get(dns, q)
+    t_ = array.get(trs, q)
+    if not na(pu)
+        u := close[1] > pu ? math.max(u, pu) : u
+        d2 := close[1] < pdn ? math.min(d2, pdn) : d2
+        if t_ == 1 and close < pu
+            t_ := -1
+        else if t_ == -1 and close > pdn
+            t_ := 1
+    array.set(ups, q, u)
+    array.set(dns, q, d2)
+    array.set(trs, q, t_)
+    array.set(sts, q, t_ == 1 ? u : d2)
+uF = hl2v - fSel * atr10
+dF = hl2v + fSel * atr10
+if not na(upF)
+    uF := close[1] > upF ? math.max(uF, upF) : uF
+    dF := close[1] < dnF ? math.min(dF, dnF) : dF
+    if trF == 1 and close < upF
+        trF := -1
+    else if trF == -1 and close > dnF
+        trF := 1
+upF := uF
+dnF := dF
+stLine = trF == 1 ? upF : dnF
+stCol = trF == 1 ? color.from_gradient(strength, 0, 10, color.new(cBull, 70), cBull) : color.from_gradient(strength, 0, 10, color.new(cBear, 70), cBear)
+pST = plot(showST ? stLine : na, "SuperTrend AI", stCol, 2, plot.style_linebr)
+pMidST = plot(showST ? hl2v : na, "hl2", display = display.none)
+fill(pST, pMidST, showST ? color.new(trF == 1 ? cBull : cBear, 92) : na, "ST fill")
+flipUp = trF == 1 and trF[1] == -1
+flipDn = trF == -1 and trF[1] == 1
+if showSTsig and flipUp
+    label.new(bar_index, stLine, str.tostring(math.round(strength)), style = label.style_label_up, color = cBull, textcolor = color.white, size = size.tiny,
+              tooltip = "SuperTrend AI bullish flip, strength 0-10")
+if showSTsig and flipDn
+    label.new(bar_index, stLine, str.tostring(math.round(strength)), style = label.style_label_down, color = cBear, textcolor = color.white, size = size.tiny,
+              tooltip = "SuperTrend AI bearish flip, strength 0-10")
+
+// ═════════════════════════════════════════════════════════════════ Reversal Bands
+rbMid = f_ema(close, 20)
+rbAtr = f_rma(trv, 20)
+pU3 = plot(showRB ? rbMid + 3 * rbAtr : na, "RB +3", color.new(cBear, 40), 1)
+pU2 = plot(showRB ? rbMid + 2 * rbAtr : na, "RB +2", color.new(cBear, 75), 1)
+pL2 = plot(showRB ? rbMid - 2 * rbAtr : na, "RB -2", color.new(cBull, 75), 1)
+pL3 = plot(showRB ? rbMid - 3 * rbAtr : na, "RB -3", color.new(cBull, 40), 1)
+fill(pU3, pU2, color.new(cBear, 92), "Upper reversal zone")
+fill(pL2, pL3, color.new(cBull, 92), "Lower reversal zone")
+
+// ═════════════════════════════════════════════════════════════════ Williams #112
+dayStart = ta.change(time("D", "1700-1700:1234567", "America/New_York")) != 0
+var float dOpen = na
+var float pH = na
+var float pL = na
+var float cH = na
+var float cL = na
+var bool traded = false
+if dayStart
+    pH := cH
+    pL := cL
+    cH := high
+    cL := low
+    dOpen := open
+    traded := false
+else
+    cH := math.max(nz(cH, high), high)
+    cL := math.min(nz(cL, low), low)
+rng = pH - pL
+buyLvl = dOpen + k * rng
+sellLvl = dOpen - k * rng
+closeMin = hour(time_close, "America/New_York") * 60 + minute(time_close, "America/New_York")
+openMin = hour(time, "America/New_York") * 60 + minute(time, "America/New_York")
+lastBar = openMin < 1020 and closeMin >= 1020
+plot(showLvls ? buyLvl : na, "Williams buy level", color.new(cBull, 0), 1, plot.style_stepline)
+plot(showLvls ? sellLvl : na, "Williams sell level", color.new(cBear, 0), 1, plot.style_stepline)
+plot(showLvls ? dOpen : na, "Day open (17:00 NY)", color.new(cGold, 50), 1, plot.style_stepline)
+bgcolor(dayStart ? color.new(cGold, 92) : na, title = "New trading day (17:00 NY)")
+
+// context of the previous closed bar (research uses only bars completed before the entry bar)
+f_align(int side) =>
+    (trSw[1] * side > 0 ? 1 : 0) + ((hw[1] - 50) * side > 0 ? 1 : 0) + (trF[1] * side > 0 ? 1 : 0)
+f_oppOB(int side) =>
+    (side > 0 ? dBearIn[1] : dBullIn[1]) < 0.35
+
+if not traded and not na(rng) and rng > 0 and not lastBar
+    strategy.entry("L", strategy.long, stop = buyLvl, oca_name = "day", oca_type = strategy.oca.cancel)
+    strategy.entry("S", strategy.short, stop = sellLvl, oca_name = "day", oca_type = strategy.oca.cancel)
+
+var int   entSide = 0
+var float entPx = na
+var int   entBar = na
+if strategy.position_size != 0 and not traded
+    traded := true
+    entSide := strategy.position_size > 0 ? 1 : -1
+    entPx := strategy.position_avg_price
+    entBar := bar_index
+    al = f_align(entSide)
+    ob = f_oppOB(entSide)
+    txt = (entSide > 0 ? "▲ BUY" : "▼ SELL") + "\nalign " + str.tostring(al) + "/3" + (ob ? "\nopp. OB" : "")
+    label.new(bar_index, entSide > 0 ? low - atr14 : high + atr14, txt, style = entSide > 0 ? label.style_label_up : label.style_label_down,
+              color = al >= 2 ? color.new(entSide > 0 ? cBull : cBear, 10) : color.new(cNeu, 20), textcolor = color.white, size = size.small)
+
+// ═════════════════════════════════════════════════════════════════ F1 marker (#155, log only)
+// F1: at 16:00 NY, if the trade was opened before 16:00 and the completed 15:00 bar moved WITH it -> early exit at 16:00 open.
+var int   f1N = 0
+var float f1Sum = 0.0
+var float f1Px = na
+nyH = hour(time, "America/New_York")
+if strategy.position_size != 0 and nyH == 16 and timeframe.in_seconds() <= 3600 and minute(time, "America/New_York") == 0
+    with = entSide * (close[1] - open[1]) > 0 and hour(time[1], "America/New_York") == 15 and entBar < bar_index
+    if with
+        f1Px := open
+        if showF1
+            label.new(bar_index, entSide > 0 ? high : low, "F1", style = entSide > 0 ? label.style_label_down : label.style_label_up,
+                      color = color.new(cGold, 0), textcolor = color.black, size = size.tiny, tooltip = "F1 would exit here (16:00 NY open) - not traded")
+if lastBar and not na(f1Px) and entSide != 0
+    f1N += 1
+    f1Sum += entSide * (f1Px - close) / entPx * 1e4
+    f1Px := na
+
+if lastBar
+    strategy.cancel_all()
+    strategy.close_all(comment = "day close")
+
+// ═════════════════════════════════════════════════════════════════ dashboard
+pos = dashPos == "Top Right" ? position.top_right : dashPos == "Bottom Right" ? position.bottom_right : dashPos == "Top Left" ? position.top_left : position.bottom_left
+var table tb = table.new(pos, 2, 11, bgcolor = color.new(#131722, 10), border_color = color.new(cNeu, 70), border_width = 1, frame_color = color.new(cGold, 40), frame_width = 1)
+f_row(int r, string a, string b, color cb) =>
+    table.cell(tb, 0, r, a, text_color = color.new(color.white, 20), text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, r, b, text_color = cb, text_size = size.small, text_halign = text.align_right)
+if showDash and barstate.islast
+    table.cell(tb, 0, 0, "GOLD WILLIAMS PRO", text_color = cGold, text_size = size.normal, text_halign = text.align_left)
+    table.cell(tb, 1, 0, timeframe.period, text_color = cGold, text_size = size.normal)
+    pos_ = strategy.position_size > 0 ? "LONG" : strategy.position_size < 0 ? "SHORT" : traded ? "done today" : "waiting"
+    f_row(1, "Williams", pos_, strategy.position_size > 0 ? cBull : strategy.position_size < 0 ? cBear : cNeu)
+    f_row(2, "Buy / Sell level", str.tostring(buyLvl, format.mintick) + " / " + str.tostring(sellLvl, format.mintick), color.white)
+    f_row(3, "Swing structure", trSw > 0 ? "Bullish" : trSw < 0 ? "Bearish" : "-", trSw > 0 ? cBull : cBear)
+    f_row(4, "Internal structure", trIn > 0 ? "Bullish" : trIn < 0 ? "Bearish" : "-", trIn > 0 ? cBull : cBear)
+    f_row(5, "HyperWave", str.tostring(hw, "#.0") + (hw > 80 ? "  OB" : hw < 20 ? "  OS" : ""), hw > 50 ? cBull : cBear)
+    f_row(6, "SuperTrend AI", (trF > 0 ? "Up" : "Down") + "  f " + str.tostring(fSel, "#.0") + "  s " + str.tostring(math.round(strength)), trF > 0 ? cBull : cBear)
+    f_row(7, "Align BUY / SELL", str.tostring(f_align(1)) + "/3  •  " + str.tostring(f_align(-1)) + "/3", color.white)
+    f_row(8, "Opp. OB near (buy/sell)", (dBearIn < 0.35 ? "yes" : "no") + " / " + (dBullIn < 0.35 ? "yes" : "no"), cGold)
+    f_row(9, "F1 days / avg Δ", str.tostring(f1N) + "  /  " + (f1N > 0 ? str.tostring(f1Sum / f1N, "#.##") + " bp" : "-"), f1N > 0 and f1Sum > 0 ? cBull : cNeu)
+    table.cell(tb, 0, 10, "Context only • sizing NOT applied • research #149-#157", text_color = color.new(cNeu, 0), text_size = size.tiny, text_halign = text.align_left)
+    table.merge_cells(tb, 0, 10, 1, 10)
+
+// ═════════════════════════════════════════════════════════════════ alerts
+if flipUp
+    alert("Gold Williams Pro: SuperTrend AI turned bullish", alert.freq_once_per_bar_close)
+if flipDn
+    alert("Gold Williams Pro: SuperTrend AI turned bearish", alert.freq_once_per_bar_close)
+if bullSw > 1
+    alert("Gold Williams Pro: bullish swing CHoCH", alert.freq_once_per_bar_close)
+if bearSw > 1
+    alert("Gold Williams Pro: bearish swing CHoCH", alert.freq_once_per_bar_close)
