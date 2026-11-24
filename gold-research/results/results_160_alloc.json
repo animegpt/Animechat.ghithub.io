@@ -1,0 +1,397 @@
+{
+ "A": {
+  "risk_parity": {
+   "mult": [
+    0.906,
+    1.734,
+    0.689
+   ],
+   "InpRiskPct": 0.136,
+   "InpOnLev": 1.73,
+   "InpLev_Williams": 0.34,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 3.59,
+    "sharpe": 0.58,
+    "maxdd_pct": -8.7,
+    "t_month": 1.64
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 0.11,
+    "sharpe": 0.02,
+    "maxdd_pct": -15.7,
+    "t_month": 0.05
+   }
+  },
+  "kelly": {
+   "mult": [
+    1.049,
+    0.0,
+    1.076
+   ],
+   "InpRiskPct": 0.157,
+   "InpOnLev": 0.0,
+   "InpLev_Williams": 0.54,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 5.79,
+    "sharpe": 0.79,
+    "maxdd_pct": -6.0,
+    "t_month": 2.24
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 2.22,
+    "sharpe": 0.37,
+    "maxdd_pct": -8.6,
+    "t_month": 0.97
+   }
+  },
+  "robust": {
+   "mult": [
+    1.163,
+    0.0,
+    1.034
+   ],
+   "InpRiskPct": 0.174,
+   "InpOnLev": 0.0,
+   "InpLev_Williams": 0.52,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 5.9,
+    "sharpe": 0.79,
+    "maxdd_pct": -6.0,
+    "t_month": 2.24
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 2.32,
+    "sharpe": 0.37,
+    "maxdd_pct": -9.2,
+    "t_month": 0.98
+   }
+  },
+  "plan_sizes_test": {
+   "ann_ret_pct": 1.18,
+   "sharpe": 0.19,
+   "maxdd_pct": -10.5,
+   "t_month": 0.5
+  },
+  "disc_t": [
+   1.6,
+   -0.51,
+   1.87
+  ]
+ },
+ "B0": {
+  "risk_parity": {
+   "mult": [
+    1.471,
+    2.728,
+    1.118
+   ],
+   "InpRiskPct": 0.221,
+   "InpOnLev": 2.73,
+   "InpLev_Williams": 0.56,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 16.37,
+    "sharpe": 1.64,
+    "maxdd_pct": -4.5,
+    "t_month": 4.63
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 7.95,
+    "sharpe": 0.88,
+    "maxdd_pct": -7.6,
+    "t_month": 2.33
+   }
+  },
+  "kelly": {
+   "mult": [
+    1.249,
+    3.491,
+    0.625
+   ],
+   "InpRiskPct": 0.187,
+   "InpOnLev": 3.49,
+   "InpLev_Williams": 0.31,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 15.51,
+    "sharpe": 1.73,
+    "maxdd_pct": -5.4,
+    "t_month": 4.88
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 7.52,
+    "sharpe": 0.93,
+    "maxdd_pct": -6.9,
+    "t_month": 2.47
+   }
+  },
+  "robust": {
+   "mult": [
+    1.471,
+    2.728,
+    1.118
+   ],
+   "InpRiskPct": 0.221,
+   "InpOnLev": 2.73,
+   "InpLev_Williams": 0.56,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 16.37,
+    "sharpe": 1.64,
+    "maxdd_pct": -4.5,
+    "t_month": 4.63
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 7.95,
+    "sharpe": 0.88,
+    "maxdd_pct": -7.6,
+    "t_month": 2.33
+   }
+  },
+  "plan_sizes_test": {
+   "ann_ret_pct": 4.85,
+   "sharpe": 0.78,
+   "maxdd_pct": -5.7,
+   "t_month": 2.07
+  },
+  "disc_t": [
+   2.32,
+   3.55,
+   2.45
+  ]
+ },
+ "B": {
+  "risk_parity": {
+   "mult": [
+    1.241,
+    2.312,
+    0.941
+   ],
+   "InpRiskPct": 0.186,
+   "InpOnLev": 2.31,
+   "InpLev_Williams": 0.47,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 10.99,
+    "sharpe": 1.31,
+    "maxdd_pct": -4.7,
+    "t_month": 3.7
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 4.03,
+    "sharpe": 0.53,
+    "maxdd_pct": -7.3,
+    "t_month": 1.41
+   }
+  },
+  "kelly": {
+   "mult": [
+    1.192,
+    2.474,
+    0.844
+   ],
+   "InpRiskPct": 0.179,
+   "InpOnLev": 2.47,
+   "InpLev_Williams": 0.42,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 10.68,
+    "sharpe": 1.31,
+    "maxdd_pct": -5.2,
+    "t_month": 3.71
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 3.8,
+    "sharpe": 0.52,
+    "maxdd_pct": -7.6,
+    "t_month": 1.37
+   }
+  },
+  "robust": {
+   "mult": [
+    1.241,
+    2.312,
+    0.941
+   ],
+   "InpRiskPct": 0.186,
+   "InpOnLev": 2.31,
+   "InpLev_Williams": 0.47,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 10.99,
+    "sharpe": 1.31,
+    "maxdd_pct": -4.7,
+    "t_month": 3.7
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 4.03,
+    "sharpe": 0.53,
+    "maxdd_pct": -7.3,
+    "t_month": 1.41
+   }
+  },
+  "plan_sizes_test": {
+   "ann_ret_pct": 3.54,
+   "sharpe": 0.57,
+   "maxdd_pct": -6.8,
+   "t_month": 1.52
+  },
+  "disc_t": [
+   2.13,
+   2.07,
+   2.45
+  ]
+ },
+ "C": {
+  "risk_parity": {
+   "mult": [
+    1.694,
+    3.113,
+    1.292
+   ],
+   "InpRiskPct": 0.254,
+   "InpOnLev": 3.11,
+   "InpLev_Williams": 0.65,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 22.36,
+    "sharpe": 1.94,
+    "maxdd_pct": -4.7,
+    "t_month": 5.47
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 12.51,
+    "sharpe": 1.19,
+    "maxdd_pct": -7.7,
+    "t_month": 3.16
+   }
+  },
+  "kelly": {
+   "mult": [
+    1.436,
+    4.558,
+    0.513
+   ],
+   "InpRiskPct": 0.215,
+   "InpOnLev": 4.56,
+   "InpLev_Williams": 0.26,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 23.29,
+    "sharpe": 2.16,
+    "maxdd_pct": -5.0,
+    "t_month": 6.1
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 13.55,
+    "sharpe": 1.41,
+    "maxdd_pct": -7.7,
+    "t_month": 3.73
+   }
+  },
+  "robust": {
+   "mult": [
+    1.694,
+    3.113,
+    1.292
+   ],
+   "InpRiskPct": 0.254,
+   "InpOnLev": 3.11,
+   "InpLev_Williams": 0.65,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 22.36,
+    "sharpe": 1.94,
+    "maxdd_pct": -4.7,
+    "t_month": 5.47
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 12.51,
+    "sharpe": 1.19,
+    "maxdd_pct": -7.7,
+    "t_month": 3.16
+   }
+  },
+  "plan_sizes_test": {
+   "ann_ret_pct": 6.07,
+   "sharpe": 0.98,
+   "maxdd_pct": -5.4,
+   "t_month": 2.58
+  },
+  "disc_t": [
+   2.5,
+   4.89,
+   2.45
+  ]
+ },
+ "D": {
+  "risk_parity": {
+   "mult": [
+    1.772,
+    3.244,
+    1.35
+   ],
+   "InpRiskPct": 0.266,
+   "InpOnLev": 3.24,
+   "InpLev_Williams": 0.67,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 24.46,
+    "sharpe": 2.03,
+    "maxdd_pct": -4.7,
+    "t_month": 5.73
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 14.17,
+    "sharpe": 1.3,
+    "maxdd_pct": -7.7,
+    "t_month": 3.43
+   }
+  },
+  "kelly": {
+   "mult": [
+    1.519,
+    4.859,
+    0.553
+   ],
+   "InpRiskPct": 0.228,
+   "InpOnLev": 4.86,
+   "InpLev_Williams": 0.28,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 26.03,
+    "sharpe": 2.26,
+    "maxdd_pct": -4.8,
+    "t_month": 6.39
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 15.6,
+    "sharpe": 1.52,
+    "maxdd_pct": -7.9,
+    "t_month": 4.03
+   }
+  },
+  "robust": {
+   "mult": [
+    1.772,
+    3.244,
+    1.35
+   ],
+   "InpRiskPct": 0.266,
+   "InpOnLev": 3.24,
+   "InpLev_Williams": 0.67,
+   "estimation_2009_2016": {
+    "ann_ret_pct": 24.46,
+    "sharpe": 2.03,
+    "maxdd_pct": -4.7,
+    "t_month": 5.73
+   },
+   "test_2017_2023": {
+    "ann_ret_pct": 14.17,
+    "sharpe": 1.3,
+    "maxdd_pct": -7.7,
+    "t_month": 3.43
+   }
+  },
+  "plan_sizes_test": {
+   "ann_ret_pct": 6.61,
+   "sharpe": 1.06,
+   "maxdd_pct": -5.2,
+   "t_month": 2.81
+  },
+  "disc_t": [
+   2.58,
+   5.13,
+   2.58
+  ]
+ }
+}

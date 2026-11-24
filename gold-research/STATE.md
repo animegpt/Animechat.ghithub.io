@@ -77,3 +77,15 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   flag 1 = 208, mean f1_delta +0.20 bp (median -0.30) ~ 0. Shadow: 388 ok (186 >1, 199 <1). Trades identical to v1.02.
   BUG: with a USC (cent) deposit the lot was 100x too large (account blown 2025-04-03). FIX v1.03 (both EAs): lot and
   net_bp from SYMBOL_TRADE_TICK_VALUE/TICK_SIZE (account currency) + "Sizing check" line printed at start.
+
+## COMBO study #158-#161 (2026-11-24) — DONE. Report: REPORT_COMBO.md
+- Rebuild of GoldComboAI.mq5 v1.00 (code/combo158.py, combo_run.py); WF reproductions of Sonic AI / Overnight AI;
+  EURUSD feature = 0 (download incomplete). Amendment A: live sizes 0.3/2.0, live long swap 0.8944 $/oz (scenario B).
+- #158: Overnight AI net/night 2017-23: A -1.6bp, B (live swap) +0.2 (t0.3), C swap-free +3.5 (t4.5), D +3.8.
+  Portfolio Sharpe (plan sizes) A 0.49 / B 0.94 / C 1.31 / D 1.39; correlations ~0.
+- #159: per-strategy RF sizing D +0.247 t3.61 (A), both periods +, Holm pass, silver D +0.23 t2.53, DSR 0.16 FAIL ->
+  probable, not proven. No Shadow EA, vault closed.
+- #160: in B no allocation beats plan sizes on 2017-23; in C/D risk parity ~0.25 / 3.1 / 0.65 (test Sharpe 1.19).
+- Execution note: Overnight exit only on the bar closing 20:00 NY; no fallback if that bar is missed (same class of
+  bug as Williams v1.00). Proposed (needs user OK): close Overnight if older than 6 h.
+- Cumulative trials: 350,225.

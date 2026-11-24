@@ -1,0 +1,75 @@
+{
+ "per_trade": {
+  "sonic_R": -0.04961223659528292,
+  "sonic_n": 398,
+  "overnight_AI": {
+   "n": 146,
+   "mean_bp": -0.66,
+   "t": -0.16
+  },
+  "overnight_plain": {
+   "n": 644,
+   "mean_bp": -2.42,
+   "t": -1.12
+  },
+  "williams": {
+   "n": 616,
+   "mean_bp": 3.63,
+   "t": 0.42
+  }
+ },
+ "strategies": {
+  "sonic": {
+   "ann_ret_pct": -0.74,
+   "sharpe": -0.23,
+   "maxdd_pct": -5.7,
+   "t_month": -0.45
+  },
+  "overnight": {
+   "ann_ret_pct": -0.25,
+   "sharpe": -0.09,
+   "maxdd_pct": -7.3,
+   "t_month": -0.17
+  },
+  "overnight_plain": {
+   "ann_ret_pct": -4.06,
+   "sharpe": -0.7,
+   "maxdd_pct": -24.1,
+   "t_month": -1.37
+  },
+  "williams": {
+   "ann_ret_pct": 2.91,
+   "sharpe": 0.22,
+   "maxdd_pct": -28.6,
+   "t_month": 0.43
+  }
+ },
+ "portfolio": {
+  "ann_ret_pct": 1.92,
+  "sharpe": 0.12,
+  "maxdd_pct": -39.3,
+  "t_month": 0.24
+ },
+ "models": {
+  "joint_rf": {
+   "D": 0.19,
+   "t_jkm": 2.42,
+   "sharpe_sized": 0.31
+  },
+  "joint_ens": {
+   "D": 0.024,
+   "t_jkm": 0.48,
+   "sharpe_sized": 0.14
+  },
+  "per_rf": {
+   "D": 0.233,
+   "t_jkm": 2.53,
+   "sharpe_sized": 0.35
+  },
+  "per_ens": {
+   "D": 0.085,
+   "t_jkm": 1.08,
+   "sharpe_sized": 0.21
+  }
+ }
+}
