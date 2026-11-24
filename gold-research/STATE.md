@@ -56,3 +56,17 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   ticks 16:58-17:00 NY, so the 16:58 window never fires; 93 Friday trades held over the weekend. FIX v1.02 (both EAs):
   exit window from InpExitNYMin = 1010 (16:50 NY, ~8 min before the research bar close); day_ny now = ENTRY trading day.
   Parity not run yet (no Python on the PC). Next: re-run tester v1.02, check exits are 16:50-16:58 NY, then parity.
+
+## Fusion lab #155–#157 (branch claude/fusion-lab-synthetic-hypotheses-r2i28g) — 2026-11-24
+- Prereg `prereg/PREREGISTRATION_155_157_fusion.md` (+ `AMENDMENT_155_A_silver_data.md`: Dukascopy silver 2004-2010 is
+  broken -> clean ground silver 2011-2022). Code `code/fusion155.py` (check | dev | silver | silverA | vault | nov).
+- Data rebuilt again (gold+silver H1 2004-01..2026-10, `code/dl.py`, ~1.5 h). Engine check exact.
+- RESULTS: F1 (Williams exit 16:00 if the 15:00 bar moved with the trade) = PROBABLE, NOT PROVEN: gates 1,2,3,5 pass
+  (silver 2011-22 delta +1.51bp t3.94; audit agent exact; vault delta +0.47bp t0.74), DSR 0.17 FAIL; effect shrinks
+  after 2016. F2 (exit 14:00 after COMEX settle) FAIL. F3 (silver Williams / 2-metal portfolio) FAIL (silver spread).
+- Cumulative trials: 350,217. Vault: opened once for F1/F2 deltas (Williams itself had been opened in #112).
+- Shadow EA now logs the F1 decision at 16:00 NY (f1_* columns), trading unchanged. Report: REPORT_FUSION.md.
+- Next: Demo shadow 6 months (safety check, not proof); new prereg for (a) reversal-aware exits on other strategies,
+  (b) silver 2004-2010 from another source, (c) M5 exit minute.
+- Gold 2026-11 (descriptive): `python code/nov2026.py download && python code/nov2026.py build && python code/fusion155.py nov`.
+If the conversation ends: "اقرأ STATE.md وكمّل".

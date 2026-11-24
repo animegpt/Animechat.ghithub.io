@@ -54,3 +54,12 @@
   - (1) الـ EA يحسب نفس البحث (المطابقة).
   - (2) توزيع الأحجام طبيعي (حوالي نصف فوق 1 ونصف تحت).
   - (3) ما فيه انهيار واضح، يعني الصفقات المكبّرة مو أسوأ بفرق كبير.
+
+## F1 shadow (#155, added 2026-11-24)
+- Input `InpShadowF1` (default true). At 16:00 NY, if a Williams position is open and was entered before 16:00, the EA
+  checks the completed 15:00-NY H1 bar: if it moved WITH the trade -> `f1_flag = 1` and the price the early exit would
+  have got (bid for longs, ask for shorts) is stored. `f1_flag = 0` rule not met, `2` = 15:00 bar missing, `-1` = never checked
+  (entry after 16:00). Nothing is closed early: the trade still exits at 16:58.
+- `f1_delta_bp` = side × (f1_exit_price − real exit price) / entry × 1e4 (only for flag 1) = what F1 would have added,
+  with the REAL spreads of both moments.
+- Not compiled/tested in MT5 here (no MetaTrader in this container). Compile in MetaEditor; check one day by hand.
