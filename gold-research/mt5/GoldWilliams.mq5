@@ -5,14 +5,16 @@
 //| range, sell stop at Open - 0.6 x prev range; first touched wins, |
 //| one trade per day, exit at the day's close (16:58 NY).           |
 //| DEMO forward test first. Magic 770501. Rules are frozen.         |
+//| v1.04: any symbol (BTCUSDc): weekend trading-day keys skipped as  |
+//| in the research (Monday uses Friday range). No-op on gold.       |
 //| v1.03: lot + net_bp from tick value (correct on USC cent accts).  |
 //| v1.02: exit window from 16:50 NY (input; Exness: no ticks after  |
 //| 16:58). v1.01: safety close if a position survives its day.      |
 //| (missed 16:58 window, e.g. broker daily break). Logic unchanged.  |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.03"
-#property description "Williams volatility breakout (#112): passed discovery 2004-16, confirmation 2017-23 (weak) and the vault 2024-26."
+#property version   "1.04"
+#property description "Williams volatility breakout (#112): gold passed discovery/confirmation/vault; v1.04 also for BTCUSDc (#165/#166, forward test)."
 #property description "Demo first. Logs every trade to MQL5/Files/GoldWilliams_trades.csv"
 #include <Trade/Trade.mqh>
 
@@ -23,6 +25,7 @@ input double InpLev        = 0.5;    // Notional as x equity (research portfolio
 input double InpFixedLot   = 0.0;    // Fixed lot (>0 overrides)
 input group "Technical"
 input int    InpExitNYMin  = 1010;   // Day-close exit from this NY minute (1010 = 16:50). v1.02: Exness sends no ticks 16:58-17:00 NY
+input bool   InpSkipWeekendKeys = true; // v1.04: no trading on Sat/Sun trading-day keys; previous range = last weekday key (research). Gold: no effect
 input int    InpServerUTC  = 0;      // Broker server offset from UTC (Exness = 0)
 input long   InpMagic      = 770501; // Magic number
 input int    InpDeviation  = 30;     // Max deviation, points
@@ -57,6 +60,7 @@ datetime TradingDayKey(datetime utc)        // NY date of the 17:00->17:00 day c
    datetime ny = ToNY(utc); MqlDateTime t; TimeToStruct((datetime)((long)ny + 7 * 3600), t);
    t.hour = 0; t.min = 0; t.sec = 0; return StructToTime(t);
   }
+bool IsWeekendKey(datetime key) { MqlDateTime t; TimeToStruct(key, t); return t.day_of_week == 0 || t.day_of_week == 6; }
 int NYMinute(datetime utc) { MqlDateTime t; TimeToStruct(ToNY(utc), t); return t.hour * 60 + t.min; }
 
 bool FindPos(ulong &tk)
@@ -90,7 +94,7 @@ void RetryPendingCloses()
 // previous full trading day's range and today's open from H1 bars
 bool ComputeLevels(datetime nowUTC)
   {
-   MqlRates r[]; int got = CopyRates(_Symbol, PERIOD_H1, 0, 72, r);     // oldest first
+   MqlRates r[]; int got = CopyRates(_Symbol, PERIOD_H1, 0, 120, r);    // oldest first (120: reaches Friday from Monday on 24/7 symbols)
    if(got < 30) return false;
    datetime today = TradingDayKey(nowUTC);
    double ph = -1, pl = 1e18, op = 0; datetime prevKey = 0; bool haveOpen = false;
@@ -98,6 +102,7 @@ bool ComputeLevels(datetime nowUTC)
      {
       datetime key = TradingDayKey(ToUTC(r[k].time));
       if(key == today) { op = r[k].open; haveOpen = true; continue; }        // keeps overwriting -> earliest bar's open
+      if(InpSkipWeekendKeys && IsWeekendKey(key)) continue;                  // v1.04: research drops weekend keys
       if(prevKey == 0) prevKey = key;
       if(key != prevKey) break;
       ph = MathMax(ph, r[k].high); pl = MathMin(pl, r[k].low);
@@ -162,7 +167,7 @@ void OnTickLogic()
    RetryPendingCloses(); FinishIfClosed();
    datetime nowUTC = ToUTC(TimeCurrent());
    datetime key = TradingDayKey(nowUTC);
-   if(key != dayKey) { dayKey = key; tradedToday = false; if(!ComputeLevels(nowUTC)) { dOpen = 0; } }
+   if(key != dayKey) { dayKey = key; tradedToday = false; if(!ComputeLevels(nowUTC)) { dOpen = 0; } if(InpSkipWeekendKeys && IsWeekendKey(key)) tradedToday = true; }
    int nm = NYMinute(nowUTC);
    ulong tk;
    if(FindPos(tk))

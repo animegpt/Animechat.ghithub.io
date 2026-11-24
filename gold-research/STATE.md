@@ -116,3 +116,11 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   Live XAUUSDc history starts 2020-01 (~41k H1 bars) < ~80k needed by the Overnight shadow model -> Overnight shadow live
   = approximate (bars_used logged); Sonic fine. Williams v1.03: compile 0/0, USD sizing 0.50x equity OK, trades = v1.02.
   Demo XAUUSDm (Standard, 1 lot = 100 oz) with 300 USD -> lot 0.00 (cannot trade). Real account unchanged.
+- 2026-11-24 Local update: account is SWAP-FREE (Islamic, Saudi Arabia, automatic per Exness) -> -894.4 in the symbol
+  spec is not charged (to verify on the first overnight position). Real capital 20,000 USC (200 USD), Standard Cent,
+  stop out 0 %, negative balance protection. Swap-free research row applies (scenario C).
+- #166 run: frozen Williams on ETH +26bp t2.42 Holm 0.03 (confirms), XRP +22.9 t1.71 (n.s.), SOL -11, LTC +4 ->
+  pre-registered verdict "weak support". BTC + ETH (largest/most liquid) work.
+- GoldWilliams.mq5 v1.04: InpSkipWeekendKeys (24/7 symbols: weekend keys skipped, Monday uses Friday range, as research);
+  no effect on gold. #167 pre-registered: BTCUSDc forward test, Magic 770503, InpLev 0.15, stop rules. NOT compiled here.
+  Cumulative trials 350,301.
