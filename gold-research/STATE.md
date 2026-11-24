@@ -98,3 +98,7 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
 - 2026-11-24 #162 Sonic v2 (60 variants entry x exit x stop, cost B): NO variant passes discovery (max t 1.38); 23/59 D>0;
   pullback-limit entries (E3) destroy Sonic (mean D -0.86). Conclusion: keep Sonic rules. Report REPORT_SONIC_V2.md.
   Cumulative trials 350,285. EURUSD download still running (~40/274 files) for the Overnight EUR robustness re-run.
+- 2026-11-24 External review (GitHub public repos via search + raw READMEs): honest studies (Donchian, SMC, ORB on Exness
+  ticks / GC) all find no confirmable gold edge OOS; retail EAs are backtest-only claims. Only new idea for us:
+  vol-managed sizing for Williams -> #163 (prereg) V1/V2 fail (D ~0, silver negative). REPORT_EXTERNAL.md.
+  Cumulative trials 350,287.
