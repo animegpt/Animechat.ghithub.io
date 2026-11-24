@@ -1,0 +1,1047 @@
+{
+ "A": {
+  "2009_2016": {
+   "overnight_AI_per_night": {
+    "n": 509,
+    "mean_bp": -0.56,
+    "t": -0.56
+   },
+   "overnight_plain_per_night": {
+    "n": 1313,
+    "mean_bp": -6.61,
+    "t": -10.09
+   },
+   "sonic_R_per_trade": {
+    "n": 775,
+    "mean_bp": 5.85,
+    "t": 1.46,
+    "mean_R": 0.128
+   },
+   "williams_per_trade": {
+    "n": 1268,
+    "mean_bp": 4.16,
+    "t": 1.56
+   }
+  },
+  "2017_2023": {
+   "overnight_AI_per_night": {
+    "n": 409,
+    "mean_bp": -1.57,
+    "t": -2.0
+   },
+   "overnight_plain_per_night": {
+    "n": 1187,
+    "mean_bp": -3.92,
+    "t": -7.61
+   },
+   "sonic_R_per_trade": {
+    "n": 669,
+    "mean_bp": 1.99,
+    "t": 0.62,
+    "mean_R": 0.106
+   },
+   "williams_per_trade": {
+    "n": 1123,
+    "mean_bp": 1.13,
+    "t": 0.53
+   }
+  },
+  "2009_2023": {
+   "overnight_AI_per_night": {
+    "n": 918,
+    "mean_bp": -1.01,
+    "t": -1.53
+   },
+   "overnight_plain_per_night": {
+    "n": 2500,
+    "mean_bp": -5.33,
+    "t": -12.61
+   },
+   "sonic_R_per_trade": {
+    "n": 1444,
+    "mean_bp": 4.06,
+    "t": 1.56,
+    "mean_R": 0.117
+   },
+   "williams_per_trade": {
+    "n": 2391,
+    "mean_bp": 2.74,
+    "t": 1.58
+   }
+  },
+  "plan": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 1.7,
+     "sharpe": 0.45,
+     "maxdd_pct": -7.2,
+     "t_month": 1.76
+    },
+    "overnight": {
+     "ann_ret_pct": -0.62,
+     "sharpe": -0.36,
+     "maxdd_pct": -21.3,
+     "t_month": -1.39
+    },
+    "overnight_plain": {
+     "ann_ret_pct": -8.89,
+     "sharpe": -2.6,
+     "maxdd_pct": -135.3,
+     "t_month": -10.07
+    },
+    "williams": {
+     "ann_ret_pct": 2.18,
+     "sharpe": 0.49,
+     "maxdd_pct": -7.1,
+     "t_month": 1.89
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 3.26,
+    "sharpe": 0.49,
+    "maxdd_pct": -15.2,
+    "t_month": 1.89
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 3.88,
+    "sharpe": 0.61,
+    "maxdd_pct": -8.2,
+    "t_month": 2.36
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 5.08,
+    "sharpe": 0.72,
+    "maxdd_pct": -6.4,
+    "t_month": 2.04
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 1.18,
+    "sharpe": 0.19,
+    "maxdd_pct": -10.5,
+    "t_month": 0.5
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.01,
+     "williams": 0.195
+    },
+    "overnight": {
+     "sonic": -0.01,
+     "overnight": 1.0,
+     "williams": 0.077
+    },
+    "williams": {
+     "sonic": 0.195,
+     "overnight": 0.077,
+     "williams": 1.0
+    }
+   }
+  },
+  "live": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 3.4,
+     "sharpe": 0.45,
+     "maxdd_pct": -14.5,
+     "t_month": 1.76
+    },
+    "overnight": {
+     "ann_ret_pct": -1.24,
+     "sharpe": -0.36,
+     "maxdd_pct": -42.5,
+     "t_month": -1.39
+    },
+    "overnight_plain": {
+     "ann_ret_pct": -17.77,
+     "sharpe": -2.6,
+     "maxdd_pct": -270.6,
+     "t_month": -10.07
+    },
+    "williams": {
+     "ann_ret_pct": 2.18,
+     "sharpe": 0.49,
+     "maxdd_pct": -7.1,
+     "t_month": 1.89
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 4.34,
+    "sharpe": 0.43,
+    "maxdd_pct": -25.4,
+    "t_month": 1.66
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 5.58,
+    "sharpe": 0.59,
+    "maxdd_pct": -15.1,
+    "t_month": 2.29
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 6.86,
+    "sharpe": 0.66,
+    "maxdd_pct": -9.5,
+    "t_month": 1.87
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 1.45,
+    "sharpe": 0.15,
+    "maxdd_pct": -20.6,
+    "t_month": 0.39
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.01,
+     "williams": 0.195
+    },
+    "overnight": {
+     "sonic": -0.01,
+     "overnight": 1.0,
+     "williams": 0.077
+    },
+    "williams": {
+     "sonic": 0.195,
+     "overnight": 0.077,
+     "williams": 1.0
+    }
+   }
+  }
+ },
+ "B0": {
+  "2009_2016": {
+   "overnight_AI_per_night": {
+    "n": 509,
+    "mean_bp": 4.02,
+    "t": 4.0
+   },
+   "overnight_plain_per_night": {
+    "n": 1313,
+    "mean_bp": -1.87,
+    "t": -2.88
+   },
+   "sonic_R_per_trade": {
+    "n": 775,
+    "mean_bp": 8.88,
+    "t": 2.2,
+    "mean_R": 0.192
+   },
+   "williams_per_trade": {
+    "n": 1268,
+    "mean_bp": 5.44,
+    "t": 2.04
+   }
+  },
+  "2017_2023": {
+   "overnight_AI_per_night": {
+    "n": 409,
+    "mean_bp": 1.91,
+    "t": 2.48
+   },
+   "overnight_plain_per_night": {
+    "n": 1187,
+    "mean_bp": -0.4,
+    "t": -0.78
+   },
+   "sonic_R_per_trade": {
+    "n": 669,
+    "mean_bp": 4.19,
+    "t": 1.28,
+    "mean_R": 0.169
+   },
+   "williams_per_trade": {
+    "n": 1123,
+    "mean_bp": 2.07,
+    "t": 0.98
+   }
+  },
+  "2009_2023": {
+   "overnight_AI_per_night": {
+    "n": 918,
+    "mean_bp": 3.08,
+    "t": 4.7
+   },
+   "overnight_plain_per_night": {
+    "n": 2500,
+    "mean_bp": -1.17,
+    "t": -2.79
+   },
+   "sonic_R_per_trade": {
+    "n": 1444,
+    "mean_bp": 6.71,
+    "t": 2.53,
+    "mean_R": 0.182
+   },
+   "williams_per_trade": {
+    "n": 2391,
+    "mean_bp": 3.85,
+    "t": 2.23
+   }
+  },
+  "plan": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 2.62,
+     "sharpe": 0.7,
+     "maxdd_pct": -6.1,
+     "t_month": 2.69
+    },
+    "overnight": {
+     "ann_ret_pct": 1.89,
+     "sharpe": 1.05,
+     "maxdd_pct": -4.9,
+     "t_month": 4.08
+    },
+    "overnight_plain": {
+     "ann_ret_pct": -1.95,
+     "sharpe": -0.6,
+     "maxdd_pct": -33.5,
+     "t_month": -2.33
+    },
+    "williams": {
+     "ann_ret_pct": 3.07,
+     "sharpe": 0.69,
+     "maxdd_pct": -5.9,
+     "t_month": 2.66
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 7.58,
+    "sharpe": 1.13,
+    "maxdd_pct": -5.7,
+    "t_month": 4.38
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 5.69,
+    "sharpe": 0.89,
+    "maxdd_pct": -6.4,
+    "t_month": 3.45
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 9.97,
+    "sharpe": 1.41,
+    "maxdd_pct": -4.5,
+    "t_month": 3.99
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 4.85,
+    "sharpe": 0.78,
+    "maxdd_pct": -5.7,
+    "t_month": 2.07
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.06,
+     "williams": 0.196
+    },
+    "overnight": {
+     "sonic": -0.06,
+     "overnight": 1.0,
+     "williams": 0.104
+    },
+    "williams": {
+     "sonic": 0.196,
+     "overnight": 0.104,
+     "williams": 1.0
+    }
+   }
+  },
+  "live": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 5.24,
+     "sharpe": 0.7,
+     "maxdd_pct": -12.2,
+     "t_month": 2.69
+    },
+    "overnight": {
+     "ann_ret_pct": 3.77,
+     "sharpe": 1.05,
+     "maxdd_pct": -9.9,
+     "t_month": 4.08
+    },
+    "overnight_plain": {
+     "ann_ret_pct": -3.9,
+     "sharpe": -0.6,
+     "maxdd_pct": -66.9,
+     "t_month": -2.33
+    },
+    "williams": {
+     "ann_ret_pct": 3.07,
+     "sharpe": 0.69,
+     "maxdd_pct": -5.9,
+     "t_month": 2.66
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 12.09,
+    "sharpe": 1.19,
+    "maxdd_pct": -7.4,
+    "t_month": 4.61
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 8.32,
+    "sharpe": 0.88,
+    "maxdd_pct": -11.0,
+    "t_month": 3.39
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 15.64,
+    "sharpe": 1.51,
+    "maxdd_pct": -5.7,
+    "t_month": 4.27
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 8.03,
+    "sharpe": 0.82,
+    "maxdd_pct": -7.4,
+    "t_month": 2.16
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.06,
+     "williams": 0.196
+    },
+    "overnight": {
+     "sonic": -0.06,
+     "overnight": 1.0,
+     "williams": 0.104
+    },
+    "williams": {
+     "sonic": 0.196,
+     "overnight": 0.104,
+     "williams": 1.0
+    }
+   }
+  }
+ },
+ "B": {
+  "2009_2016": {
+   "overnight_AI_per_night": {
+    "n": 509,
+    "mean_bp": 2.32,
+    "t": 2.3
+   },
+   "overnight_plain_per_night": {
+    "n": 1313,
+    "mean_bp": -3.61,
+    "t": -5.54
+   },
+   "sonic_R_per_trade": {
+    "n": 775,
+    "mean_bp": 8.0,
+    "t": 1.99,
+    "mean_R": 0.175
+   },
+   "williams_per_trade": {
+    "n": 1268,
+    "mean_bp": 5.44,
+    "t": 2.04
+   }
+  },
+  "2017_2023": {
+   "overnight_AI_per_night": {
+    "n": 409,
+    "mean_bp": 0.22,
+    "t": 0.28
+   },
+   "overnight_plain_per_night": {
+    "n": 1187,
+    "mean_bp": -2.15,
+    "t": -4.2
+   },
+   "sonic_R_per_trade": {
+    "n": 669,
+    "mean_bp": 3.32,
+    "t": 1.03,
+    "mean_R": 0.146
+   },
+   "williams_per_trade": {
+    "n": 1123,
+    "mean_bp": 2.07,
+    "t": 0.98
+   }
+  },
+  "2009_2023": {
+   "overnight_AI_per_night": {
+    "n": 918,
+    "mean_bp": 1.39,
+    "t": 2.1
+   },
+   "overnight_plain_per_night": {
+    "n": 2500,
+    "mean_bp": -2.92,
+    "t": -6.95
+   },
+   "sonic_R_per_trade": {
+    "n": 1444,
+    "mean_bp": 5.83,
+    "t": 2.22,
+    "mean_R": 0.161
+   },
+   "williams_per_trade": {
+    "n": 2391,
+    "mean_bp": 3.85,
+    "t": 2.23
+   }
+  },
+  "plan": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 2.33,
+     "sharpe": 0.62,
+     "maxdd_pct": -6.3,
+     "t_month": 2.41
+    },
+    "overnight": {
+     "ann_ret_pct": 0.85,
+     "sharpe": 0.48,
+     "maxdd_pct": -8.4,
+     "t_month": 1.86
+    },
+    "overnight_plain": {
+     "ann_ret_pct": -4.86,
+     "sharpe": -1.5,
+     "maxdd_pct": -75.2,
+     "t_month": -5.79
+    },
+    "williams": {
+     "ann_ret_pct": 3.07,
+     "sharpe": 0.69,
+     "maxdd_pct": -5.9,
+     "t_month": 2.66
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 6.25,
+    "sharpe": 0.94,
+    "maxdd_pct": -6.8,
+    "t_month": 3.63
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 5.4,
+    "sharpe": 0.85,
+    "maxdd_pct": -6.6,
+    "t_month": 3.29
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 8.62,
+    "sharpe": 1.22,
+    "maxdd_pct": -4.8,
+    "t_month": 3.46
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 3.54,
+    "sharpe": 0.57,
+    "maxdd_pct": -6.8,
+    "t_month": 1.52
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.043,
+     "williams": 0.195
+    },
+    "overnight": {
+     "sonic": -0.043,
+     "overnight": 1.0,
+     "williams": 0.093
+    },
+    "williams": {
+     "sonic": 0.195,
+     "overnight": 0.093,
+     "williams": 1.0
+    }
+   }
+  },
+  "live": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 4.66,
+     "sharpe": 0.62,
+     "maxdd_pct": -12.7,
+     "t_month": 2.41
+    },
+    "overnight": {
+     "ann_ret_pct": 1.7,
+     "sharpe": 0.48,
+     "maxdd_pct": -16.8,
+     "t_month": 1.86
+    },
+    "overnight_plain": {
+     "ann_ret_pct": -9.73,
+     "sharpe": -1.5,
+     "maxdd_pct": -150.5,
+     "t_month": -5.79
+    },
+    "williams": {
+     "ann_ret_pct": 3.07,
+     "sharpe": 0.69,
+     "maxdd_pct": -5.9,
+     "t_month": 2.66
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 9.43,
+    "sharpe": 0.93,
+    "maxdd_pct": -8.9,
+    "t_month": 3.61
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 7.73,
+    "sharpe": 0.82,
+    "maxdd_pct": -11.6,
+    "t_month": 3.18
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 12.94,
+    "sharpe": 1.25,
+    "maxdd_pct": -6.3,
+    "t_month": 3.54
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 5.41,
+    "sharpe": 0.55,
+    "maxdd_pct": -8.9,
+    "t_month": 1.47
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.043,
+     "williams": 0.195
+    },
+    "overnight": {
+     "sonic": -0.043,
+     "overnight": 1.0,
+     "williams": 0.093
+    },
+    "williams": {
+     "sonic": 0.195,
+     "overnight": 0.093,
+     "williams": 1.0
+    }
+   }
+  }
+ },
+ "C": {
+  "2009_2016": {
+   "overnight_AI_per_night": {
+    "n": 509,
+    "mean_bp": 5.61,
+    "t": 5.58
+   },
+   "overnight_plain_per_night": {
+    "n": 1313,
+    "mean_bp": -0.25,
+    "t": -0.38
+   },
+   "sonic_R_per_trade": {
+    "n": 775,
+    "mean_bp": 9.7,
+    "t": 2.38,
+    "mean_R": 0.209
+   },
+   "williams_per_trade": {
+    "n": 1268,
+    "mean_bp": 5.44,
+    "t": 2.04
+   }
+  },
+  "2017_2023": {
+   "overnight_AI_per_night": {
+    "n": 409,
+    "mean_bp": 3.49,
+    "t": 4.54
+   },
+   "overnight_plain_per_night": {
+    "n": 1187,
+    "mean_bp": 1.24,
+    "t": 2.44
+   },
+   "sonic_R_per_trade": {
+    "n": 669,
+    "mean_bp": 5.01,
+    "t": 1.51,
+    "mean_R": 0.191
+   },
+   "williams_per_trade": {
+    "n": 1123,
+    "mean_bp": 2.07,
+    "t": 0.98
+   }
+  },
+  "2009_2023": {
+   "overnight_AI_per_night": {
+    "n": 918,
+    "mean_bp": 4.66,
+    "t": 7.12
+   },
+   "overnight_plain_per_night": {
+    "n": 2500,
+    "mean_bp": 0.46,
+    "t": 1.1
+   },
+   "sonic_R_per_trade": {
+    "n": 1444,
+    "mean_bp": 7.53,
+    "t": 2.82,
+    "mean_R": 0.201
+   },
+   "williams_per_trade": {
+    "n": 2391,
+    "mean_bp": 3.85,
+    "t": 2.23
+   }
+  },
+  "plan": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 2.9,
+     "sharpe": 0.76,
+     "maxdd_pct": -5.9,
+     "t_month": 2.95
+    },
+    "overnight": {
+     "ann_ret_pct": 2.85,
+     "sharpe": 1.56,
+     "maxdd_pct": -3.7,
+     "t_month": 6.06
+    },
+    "overnight_plain": {
+     "ann_ret_pct": 0.77,
+     "sharpe": 0.24,
+     "maxdd_pct": -8.8,
+     "t_month": 0.92
+    },
+    "williams": {
+     "ann_ret_pct": 3.07,
+     "sharpe": 0.69,
+     "maxdd_pct": -5.9,
+     "t_month": 2.66
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 8.82,
+    "sharpe": 1.31,
+    "maxdd_pct": -5.4,
+    "t_month": 5.08
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 5.97,
+    "sharpe": 0.93,
+    "maxdd_pct": -6.3,
+    "t_month": 3.6
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 11.23,
+    "sharpe": 1.58,
+    "maxdd_pct": -4.2,
+    "t_month": 4.47
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 6.07,
+    "sharpe": 0.98,
+    "maxdd_pct": -5.4,
+    "t_month": 2.58
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.075,
+     "williams": 0.197
+    },
+    "overnight": {
+     "sonic": -0.075,
+     "overnight": 1.0,
+     "williams": 0.113
+    },
+    "williams": {
+     "sonic": 0.197,
+     "overnight": 0.113,
+     "williams": 1.0
+    }
+   }
+  },
+  "live": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 5.79,
+     "sharpe": 0.76,
+     "maxdd_pct": -11.8,
+     "t_month": 2.95
+    },
+    "overnight": {
+     "ann_ret_pct": 5.71,
+     "sharpe": 1.56,
+     "maxdd_pct": -7.3,
+     "t_month": 6.06
+    },
+    "overnight_plain": {
+     "ann_ret_pct": 1.53,
+     "sharpe": 0.24,
+     "maxdd_pct": -17.6,
+     "t_month": 0.92
+    },
+    "williams": {
+     "ann_ret_pct": 3.07,
+     "sharpe": 0.69,
+     "maxdd_pct": -5.9,
+     "t_month": 2.66
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 14.57,
+    "sharpe": 1.43,
+    "maxdd_pct": -6.7,
+    "t_month": 5.53
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 8.86,
+    "sharpe": 0.93,
+    "maxdd_pct": -10.5,
+    "t_month": 3.6
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 18.16,
+    "sharpe": 1.75,
+    "maxdd_pct": -5.4,
+    "t_month": 4.94
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 10.47,
+    "sharpe": 1.06,
+    "maxdd_pct": -6.7,
+    "t_month": 2.8
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.075,
+     "williams": 0.197
+    },
+    "overnight": {
+     "sonic": -0.075,
+     "overnight": 1.0,
+     "williams": 0.113
+    },
+    "williams": {
+     "sonic": 0.197,
+     "overnight": 0.113,
+     "williams": 1.0
+    }
+   }
+  }
+ },
+ "D": {
+  "2009_2016": {
+   "overnight_AI_per_night": {
+    "n": 509,
+    "mean_bp": 5.91,
+    "t": 5.88
+   },
+   "overnight_plain_per_night": {
+    "n": 1313,
+    "mean_bp": 0.05,
+    "t": 0.08
+   },
+   "sonic_R_per_trade": {
+    "n": 775,
+    "mean_bp": 10.0,
+    "t": 2.46,
+    "mean_R": 0.216
+   },
+   "williams_per_trade": {
+    "n": 1268,
+    "mean_bp": 5.74,
+    "t": 2.15
+   }
+  },
+  "2017_2023": {
+   "overnight_AI_per_night": {
+    "n": 409,
+    "mean_bp": 3.79,
+    "t": 4.93
+   },
+   "overnight_plain_per_night": {
+    "n": 1187,
+    "mean_bp": 1.54,
+    "t": 3.03
+   },
+   "sonic_R_per_trade": {
+    "n": 669,
+    "mean_bp": 5.31,
+    "t": 1.6,
+    "mean_R": 0.2
+   },
+   "williams_per_trade": {
+    "n": 1123,
+    "mean_bp": 2.37,
+    "t": 1.12
+   }
+  },
+  "2009_2023": {
+   "overnight_AI_per_night": {
+    "n": 918,
+    "mean_bp": 4.96,
+    "t": 7.58
+   },
+   "overnight_plain_per_night": {
+    "n": 2500,
+    "mean_bp": 0.76,
+    "t": 1.81
+   },
+   "sonic_R_per_trade": {
+    "n": 1444,
+    "mean_bp": 7.83,
+    "t": 2.93,
+    "mean_R": 0.208
+   },
+   "williams_per_trade": {
+    "n": 2391,
+    "mean_bp": 4.15,
+    "t": 2.4
+   }
+  },
+  "plan": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 3.01,
+     "sharpe": 0.79,
+     "maxdd_pct": -5.8,
+     "t_month": 3.07
+    },
+    "overnight": {
+     "ann_ret_pct": 3.04,
+     "sharpe": 1.66,
+     "maxdd_pct": -3.5,
+     "t_month": 6.42
+    },
+    "overnight_plain": {
+     "ann_ret_pct": 1.27,
+     "sharpe": 0.39,
+     "maxdd_pct": -8.7,
+     "t_month": 1.52
+    },
+    "williams": {
+     "ann_ret_pct": 3.31,
+     "sharpe": 0.74,
+     "maxdd_pct": -5.5,
+     "t_month": 2.87
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 9.36,
+    "sharpe": 1.39,
+    "maxdd_pct": -5.2,
+    "t_month": 5.39
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 6.32,
+    "sharpe": 0.99,
+    "maxdd_pct": -6.1,
+    "t_month": 3.82
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 11.77,
+    "sharpe": 1.66,
+    "maxdd_pct": -4.1,
+    "t_month": 4.69
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 6.61,
+    "sharpe": 1.06,
+    "maxdd_pct": -5.2,
+    "t_month": 2.81
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.077,
+     "williams": 0.197
+    },
+    "overnight": {
+     "sonic": -0.077,
+     "overnight": 1.0,
+     "williams": 0.115
+    },
+    "williams": {
+     "sonic": 0.197,
+     "overnight": 0.115,
+     "williams": 1.0
+    }
+   }
+  },
+  "live": {
+   "strategies": {
+    "sonic": {
+     "ann_ret_pct": 6.02,
+     "sharpe": 0.79,
+     "maxdd_pct": -11.5,
+     "t_month": 3.07
+    },
+    "overnight": {
+     "ann_ret_pct": 6.08,
+     "sharpe": 1.66,
+     "maxdd_pct": -7.0,
+     "t_month": 6.42
+    },
+    "overnight_plain": {
+     "ann_ret_pct": 2.53,
+     "sharpe": 0.39,
+     "maxdd_pct": -17.3,
+     "t_month": 1.52
+    },
+    "williams": {
+     "ann_ret_pct": 3.31,
+     "sharpe": 0.74,
+     "maxdd_pct": -5.5,
+     "t_month": 2.87
+    }
+   },
+   "portfolio": {
+    "ann_ret_pct": 15.4,
+    "sharpe": 1.51,
+    "maxdd_pct": -6.4,
+    "t_month": 5.85
+   },
+   "portfolio_without_overnight": {
+    "ann_ret_pct": 9.33,
+    "sharpe": 0.98,
+    "maxdd_pct": -9.8,
+    "t_month": 3.79
+   },
+   "portfolio_2009_2016": {
+    "ann_ret_pct": 18.98,
+    "sharpe": 1.83,
+    "maxdd_pct": -5.2,
+    "t_month": 5.17
+   },
+   "portfolio_2017_2023": {
+    "ann_ret_pct": 11.31,
+    "sharpe": 1.14,
+    "maxdd_pct": -6.4,
+    "t_month": 3.03
+   },
+   "corr": {
+    "sonic": {
+     "sonic": 1.0,
+     "overnight": -0.077,
+     "williams": 0.197
+    },
+    "overnight": {
+     "sonic": -0.077,
+     "overnight": 1.0,
+     "williams": 0.115
+    },
+    "williams": {
+     "sonic": 0.197,
+     "overnight": 0.115,
+     "williams": 1.0
+    }
+   }
+  }
+ }
+}
