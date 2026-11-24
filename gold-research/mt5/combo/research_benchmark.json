@@ -1,0 +1,16 @@
+{
+ "sonic": {
+  "up_bp": 8.3,
+  "down_bp": -1.34,
+  "welch_t": 1.87,
+  "n_trades": 1444,
+  "years": 15
+ },
+ "overnight": {
+  "up_bp": -0.27,
+  "down_bp": -5.12,
+  "welch_t": 3.02,
+  "n_trades": 918,
+  "years": 15
+ }
+}
