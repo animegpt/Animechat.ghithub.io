@@ -95,3 +95,6 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   GS_Poll in OnTick). Finding: the Overnight RF needs ~80000 H1 bars of history to match research (20000 -> size diff
   0.17, 37% flip up/down); Sonic stable from 20000 -> default GS_InpHistBars 80000, bars_used logged.
   Compare: code/combo_shadow_compare.py (pipeline tested on simulated files). NOT compiled here.
+- 2026-11-24 #162 Sonic v2 (60 variants entry x exit x stop, cost B): NO variant passes discovery (max t 1.38); 23/59 D>0;
+  pullback-limit entries (E3) destroy Sonic (mean D -0.86). Conclusion: keep Sonic rules. Report REPORT_SONIC_V2.md.
+  Cumulative trials 350,285. EURUSD download still running (~40/274 files) for the Overnight EUR robustness re-run.
