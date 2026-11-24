@@ -107,3 +107,5 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   (p_time <= 0.02 in 5 markets) but costs eat it in indices/oil; EURUSD negative. Equal-vol 8-market basket Sharpe
   0.60 < gold alone 0.73. Candidate for a NEW prereg: BTC Williams forward / clean data. REPORT_WILLIAMS_EVERYWHERE.md.
   Cumulative trials 350,297. Data now in /home/user/lab/raw: US500, NASDAQ, DAX(2015+), WTI, USDJPY, EURUSD 2012+, BTC.
+- 2026-11-24 #166 (BTC Williams on ETH/SOL/XRP/LTC) PRE-REGISTERED, data downloaded (/home/user/lab/raw/CRYPTO_*),
+  NOT computed: paused by the user. Resume with a small script using lab.Mkt + features149.williams per coin.
