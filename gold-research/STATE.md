@@ -148,3 +148,8 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   Shadow template): no fallback ever; value = tick value AND OrderCalcProfit must agree within 5 % else no lot (retry
   60 s); market path no longer burns the day; trade-session check (SymbolInfoSessionTrade) for placement retries.
   Williams charts disabled live until v1.08 is compiled + tested. NOT compiled here.
+- 2026-11-25 18:10 Local v1.08: compile 0/0 both; BTC tester identical to v1.07; gold "market closed" 3109 -> 0;
+  v1.08 also trades 2024-03-21 that v1.07 skipped (v1.07 bug); live cold-restart test on the real terminal (lot always
+  < min test chart): value 0 at start -> no orders, later 100.0 USC by both checks. Remaining: orders placed at the
+  session-open second with a wide spread -> buy stop +0.4. v1.09: place only when the trade session has been open
+  >= 5 min. Williams still NOT live (needs user approval + size). Auto-start: Task Scheduler / VPS proposed locally.

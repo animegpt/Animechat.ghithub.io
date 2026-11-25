@@ -5,6 +5,8 @@
 //| range, sell stop at Open - 0.6 x prev range; first touched wins, |
 //| one trade per day, exit at the day's close (16:58 NY).           |
 //| DEMO forward test first. Magic 770501. Rules are frozen.         |
+//| v1.09: day orders placed >= 5 min after the trade session opens  |
+//| (spread at the open is wide; buy stop = level + current spread). |
 //| v1.08 CRITICAL: no contract-size fallback for the lot (cent acct  |
 //| tick value is 0 right after start -> was 100x). Two independent   |
 //| value checks must agree, else no orders. Trade-session check.     |
@@ -22,7 +24,7 @@
 //| (missed 16:58 window, e.g. broker daily break). Logic unchanged.  |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.08"
+#property version   "1.09"
 #property description "Williams volatility breakout (#112): gold passed discovery/confirmation/vault; v1.04 also for BTCUSDc (#165/#166, forward test)."
 #property description "Demo first. Logs every trade to MQL5/Files/GoldWilliams_trades.csv"
 #include <Trade/Trade.mqh>
@@ -141,19 +143,21 @@ double MoneyPerPricePerLot()
    if(MathAbs(pr - a) > 0.05 * MathMax(pr, a)) { static datetime w = 0; if(TimeCurrent() - w > 3600) { w = TimeCurrent(); PrintFormat("Williams: value check mismatch (tick %.6f vs calc %.6f) - no orders until they agree", a, pr); } return 0.0; }
    return a;
   }
-// v1.08: is the symbol's TRADE session open now (server time)?
-bool TradeSessionOpen()
+// v1.08/v1.09: seconds since the symbol's current TRADE session opened (server time); -1 if closed now.
+// A session running from midnight counts from the previous day's session if that one ended at 24:00.
+long TradeSessionAge()
   {
    datetime now = TimeTradeServer(); MqlDateTime t; TimeToStruct(now, t);
-   datetime from, to; uint sec = (uint)(t.hour * 3600 + t.min * 60 + t.sec);
+   datetime from, to; long sec = t.hour * 3600 + t.min * 60 + t.sec;
    for(uint k = 0; k < 10; k++)
      {
       if(!SymbolInfoSessionTrade(_Symbol, (ENUM_DAY_OF_WEEK)t.day_of_week, k, from, to)) break;
-      uint f = (uint)((long)from % 86400), e = (uint)((long)to % 86400); if(e == 0) e = 86400;
-      if(sec >= f && sec < e) return true;
+      long f = (long)from % 86400, e = (long)to % 86400; if(e == 0) e = 86400;
+      if(sec >= f && sec < e) return (f == 0) ? sec + 86400 : sec - f;     // from 00:00 -> treat as continuing (old enough)
      }
-   return false;
+   return -1;
   }
+bool TradeSessionOpen() { return TradeSessionAge() >= 0; }
 double LotFor(double price)
   {
    double step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP), mn = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN), mx = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
@@ -304,7 +308,7 @@ void OnTickLogic()
    if(tradedToday || dOpen <= 0 || exitWin) return;
    if(InpPendingEntry)
      {
-      bool fresh = TimeTradeServer() - (datetime)SymbolInfoInteger(_Symbol, SYMBOL_TIME) < 120 && TradeSessionOpen();   // v1.08: quoting AND trade session open
+      bool fresh = TimeTradeServer() - (datetime)SymbolInfoInteger(_Symbol, SYMBOL_TIME) < 120 && TradeSessionAge() >= 300;   // v1.09: quoting AND session open >= 5 min
       if(gPlaceTried != dayKey && TimeCurrent() >= gNextTry && fresh) { gPlaceTried = dayKey; PlaceDayOrders(); }   // on "market closed" PlaceDayOrders re-arms a retry
       if(gOrdersDay == dayKey) return;                                         // orders working; fills are picked up above
       if(gPlaceTried != dayKey) return;                                        // v1.06: waiting for the market to reopen: never market-enter while closed
