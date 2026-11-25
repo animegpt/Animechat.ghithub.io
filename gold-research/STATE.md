@@ -153,3 +153,6 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   < min test chart): value 0 at start -> no orders, later 100.0 USC by both checks. Remaining: orders placed at the
   session-open second with a wide spread -> buy stop +0.4. v1.09: place only when the trade session has been open
   >= 5 min. Williams still NOT live (needs user approval + size). Auto-start: Task Scheduler / VPS proposed locally.
+- 2026-11-25 USER DECISION: accepts up to 60 % drawdown (experiment money, trusts the strategy). Combo v1.01 x4 live.
+  User returns in ~1 week with a live-account update. Next session: read the weekly report (trades per robot, P&L,
+  max DD, swap on Overnight = 0?, Sizing check lines, any stale/odd positions), then decide Williams v1.09 go-live size.
