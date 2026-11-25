@@ -5,6 +5,8 @@
 //| range, sell stop at Open - 0.6 x prev range; first touched wins, |
 //| one trade per day, exit at the day's close (16:58 NY).           |
 //| DEMO forward test first. Magic 770501. Rules are frozen.         |
+//| v1.07: placement attempted only while quotes are fresh (no log  |
+//| spam during the daily break / weekends). Logic unchanged.         |
 //| v1.06: retry order placement after the daily break (no fallback  |
 //| on "market closed"); orders expire at the exit time (server).   |
 //| v1.05: entries as OCO stop orders AT the levels (research fills  |
@@ -17,7 +19,7 @@
 //| (missed 16:58 window, e.g. broker daily break). Logic unchanged.  |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.06"
+#property version   "1.07"
 #property description "Williams volatility breakout (#112): gold passed discovery/confirmation/vault; v1.04 also for BTCUSDc (#165/#166, forward test)."
 #property description "Demo first. Logs every trade to MQL5/Files/GoldWilliams_trades.csv"
 #include <Trade/Trade.mqh>
@@ -272,7 +274,8 @@ void OnTickLogic()
    if(tradedToday || dOpen <= 0 || exitWin) return;
    if(InpPendingEntry)
      {
-      if(gPlaceTried != dayKey && TimeCurrent() >= gNextTry) { gPlaceTried = dayKey; PlaceDayOrders(); }   // on "market closed" PlaceDayOrders re-arms a retry
+      bool fresh = TimeTradeServer() - (datetime)SymbolInfoInteger(_Symbol, SYMBOL_TIME) < 120;   // v1.07: market quoting now
+      if(gPlaceTried != dayKey && TimeCurrent() >= gNextTry && fresh) { gPlaceTried = dayKey; PlaceDayOrders(); }   // on "market closed" PlaceDayOrders re-arms a retry
       if(gOrdersDay == dayKey) return;                                         // orders working; fills are picked up above
       if(gPlaceTried != dayKey) return;                                        // v1.06: waiting for the market to reopen: never market-enter while closed
      }

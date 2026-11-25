@@ -137,3 +137,7 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   daily break -> "market closed" -> fallback on 247 days; 8 orders alive past exit on early-close holidays.
   FIX v1.06: on MARKET_CLOSED retry placement every 60 s (no fallback, no market entry while closed); orders carry an
   expiry = today's exit time (server) when the symbol allows ORDER_TIME_SPECIFIED. NOT compiled here.
+- 2026-11-25 Local v1.06 tester: gold orders placed on all 385 days (0 fallback), slippage 0.15, net_bp 7.15 (final
+  10904); BTC unchanged +7.54 bp; order expiry supported (16:50 NY). v1.07: placement attempted only while the symbol's
+  last quote is < 120 s old (removes ~14k "market closed" log lines); trading logic unchanged. Live spread logger
+  running on the PC (BTCUSDc 6.40, XAUUSDc 0.221 at first row). Williams gold + BTC READY after a v1.07 compile.
