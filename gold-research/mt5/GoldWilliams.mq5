@@ -5,6 +5,9 @@
 //| range, sell stop at Open - 0.6 x prev range; first touched wins, |
 //| one trade per day, exit at the day's close (16:58 NY).           |
 //| DEMO forward test first. Magic 770501. Rules are frozen.         |
+//| v1.08 CRITICAL: no contract-size fallback for the lot (cent acct  |
+//| tick value is 0 right after start -> was 100x). Two independent   |
+//| value checks must agree, else no orders. Trade-session check.     |
 //| v1.07: placement attempted only while quotes are fresh (no log  |
 //| spam during the daily break / weekends). Logic unchanged.         |
 //| v1.06: retry order placement after the daily break (no fallback  |
@@ -19,7 +22,7 @@
 //| (missed 16:58 window, e.g. broker daily break). Logic unchanged.  |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.07"
+#property version   "1.08"
 #property description "Williams volatility breakout (#112): gold passed discovery/confirmation/vault; v1.04 also for BTCUSDc (#165/#166, forward test)."
 #property description "Demo first. Logs every trade to MQL5/Files/GoldWilliams_trades.csv"
 #include <Trade/Trade.mqh>
@@ -125,17 +128,39 @@ bool ComputeLevels(datetime nowUTC)
 
 // v1.03: value of a 1.0 price move for 1 lot, in ACCOUNT currency (USD or USC cent accounts alike), from the broker's
 // tick value. The old contract-size formula assumed a USD account and sized cent accounts 100x too large.
+// v1.08: value of a 1.0 price move for 1 lot in ACCOUNT currency, or 0 if it cannot be trusted right now.
+// Two independent sources must agree within 5 %: broker tick value and OrderCalcProfit. NEVER falls back to the
+// contract size (on a cent account that is 100x too small a value -> 100x too large a lot).
 double MoneyPerPricePerLot()
   {
    double tv = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE), ts = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   if(tv > 0 && ts > 0) return tv / ts;
-   return SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE);
+   if(!(tv > 0) || !(ts > 0)) return 0.0;
+   double a = tv / ts;
+   double px = SymbolInfoDouble(_Symbol, SYMBOL_BID), pr = 0;
+   if(px <= 0 || !OrderCalcProfit(ORDER_TYPE_BUY, _Symbol, 1.0, px, px + 1.0, pr) || !(pr > 0)) return 0.0;
+   if(MathAbs(pr - a) > 0.05 * MathMax(pr, a)) { static datetime w = 0; if(TimeCurrent() - w > 3600) { w = TimeCurrent(); PrintFormat("Williams: value check mismatch (tick %.6f vs calc %.6f) - no orders until they agree", a, pr); } return 0.0; }
+   return a;
+  }
+// v1.08: is the symbol's TRADE session open now (server time)?
+bool TradeSessionOpen()
+  {
+   datetime now = TimeTradeServer(); MqlDateTime t; TimeToStruct(now, t);
+   datetime from, to; uint sec = (uint)(t.hour * 3600 + t.min * 60 + t.sec);
+   for(uint k = 0; k < 10; k++)
+     {
+      if(!SymbolInfoSessionTrade(_Symbol, (ENUM_DAY_OF_WEEK)t.day_of_week, k, from, to)) break;
+      uint f = (uint)((long)from % 86400), e = (uint)((long)to % 86400); if(e == 0) e = 86400;
+      if(sec >= f && sec < e) return true;
+     }
+   return false;
   }
 double LotFor(double price)
   {
    double step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP), mn = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN), mx = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    double lot = InpFixedLot;
-   if(lot <= 0) lot = AccountInfoDouble(ACCOUNT_EQUITY) * InpLev / (price * MoneyPerPricePerLot());   // notional (account ccy) = InpLev x equity
+   double vpp = MoneyPerPricePerLot();
+   if(vpp <= 0 || price <= 0) return 0.0;                                  // v1.08: value not trustworthy -> no lot
+   if(lot <= 0) lot = AccountInfoDouble(ACCOUNT_EQUITY) * InpLev / (price * vpp);   // notional (account ccy) = InpLev x equity
    if(step <= 0) step = 0.01; lot = MathFloor(lot / step + 1e-9) * step;
    if(lot < mn) return 0.0; if(lot > mx) lot = mx; return NormalizeDouble(lot, 2);
   }
@@ -227,7 +252,12 @@ void PlaceDayOrders()
    if(bid >= buyLvl || bid <= sellLvl) { gOrdersDay = 0; return; }       // handled by the market-on-touch path below
    double bl = NormalizeDouble(buyLvl + spr, _Digits), sl = NormalizeDouble(sellLvl, _Digits);   // buy stop triggers on ASK: +spread = BID at the level
    double lotB = LotFor(bl), lotS = LotFor(sl);
-   if(lotB <= 0 || lotS <= 0) { Print("Williams: lot below minimum"); return; }
+   if(lotB <= 0 || lotS <= 0)
+     {   // v1.08: value not ready (cent conversion syncing) or below minimum -> no orders, retry in 60 s
+      DeletePendings(); gOrdersDay = 0; gPlaceTried = 0; gNextTry = TimeCurrent() + 60;
+      static datetime lw = 0; if(TimeCurrent() - lw > 3600) { lw = TimeCurrent(); Print("Williams: lot not available yet (value check / minimum) - retrying"); }
+      return;
+     }
    long em = SymbolInfoInteger(_Symbol, SYMBOL_EXPIRATION_MODE); bool canExp = (em & SYMBOL_EXPIRATION_SPECIFIED) != 0;
    ENUM_ORDER_TYPE_TIME tt = canExp ? ORDER_TIME_SPECIFIED : ORDER_TIME_GTC; datetime ex = canExp ? ExitServerTime() : 0;
    if(canExp && ex <= TimeCurrent() + 60) { tt = ORDER_TIME_GTC; ex = 0; }
@@ -274,7 +304,7 @@ void OnTickLogic()
    if(tradedToday || dOpen <= 0 || exitWin) return;
    if(InpPendingEntry)
      {
-      bool fresh = TimeTradeServer() - (datetime)SymbolInfoInteger(_Symbol, SYMBOL_TIME) < 120;   // v1.07: market quoting now
+      bool fresh = TimeTradeServer() - (datetime)SymbolInfoInteger(_Symbol, SYMBOL_TIME) < 120 && TradeSessionOpen();   // v1.08: quoting AND trade session open
       if(gPlaceTried != dayKey && TimeCurrent() >= gNextTry && fresh) { gPlaceTried = dayKey; PlaceDayOrders(); }   // on "market closed" PlaceDayOrders re-arms a retry
       if(gOrdersDay == dayKey) return;                                         // orders working; fills are picked up above
       if(gPlaceTried != dayKey) return;                                        // v1.06: waiting for the market to reopen: never market-enter while closed
@@ -282,10 +312,10 @@ void OnTickLogic()
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID), ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    int side = bid >= buyLvl ? 1 : (bid <= sellLvl ? -1 : 0);                  // research triggers on BID high/low
    if(side == 0) return;
+   double px = side == 1 ? ask : bid, lot = LotFor(px);
+   if(lot <= 0) { static datetime lw2 = 0; if(TimeCurrent() - lw2 > 3600) { lw2 = TimeCurrent(); Print("Williams: lot not available yet (value check / minimum)"); } return; }   // v1.08
    tradedToday = true;                                                         // first touched level wins, one trade per day
    if(InpMaxSpread > 0 && ask - bid > InpMaxSpread) { Print("Williams: skipped, spread ", ask - bid); return; }
-   double px = side == 1 ? ask : bid, lot = LotFor(px);
-   if(lot <= 0) { Print("Williams: lot below minimum"); return; }
    trade.SetExpertMagicNumber(InpMagic); trade.SetDeviationInPoints(InpDeviation);
    bool ok = side == 1 ? trade.Buy(lot, _Symbol, 0, 0, 0, "Williams#112") : trade.Sell(lot, _Symbol, 0, 0, 0, "Williams#112");
    if(!ok) { Print("Williams order failed: ", trade.ResultRetcodeDescription()); return; }

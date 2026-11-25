@@ -9,7 +9,7 @@
 //| Magic 770502. Run it INSTEAD of GoldWilliams (770501), not with. |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.03"
+#property version   "1.08"
 #property description "Williams #112 + SHADOW RF sizing (logged only, never applied). Research #149-#153: model = 'probable, not proven'."
 #property description "Logs: MQL5/Files/GoldWilliams_Shadow_trades.csv, _signals.csv, _bars.csv"
 #include <Trade/Trade.mqh>
@@ -526,19 +526,26 @@ bool ComputeLevels(datetime nowUTC)
    dOpen = op; prevRange = ph - pl; buyLvl = op + K_RANGE * prevRange; sellLvl = op - K_RANGE * prevRange;
    return prevRange > 0;
   }
-// v1.03: value of a 1.0 price move for 1 lot, in ACCOUNT currency (USD or USC cent accounts alike), from the broker's
-// tick value. The old contract-size formula assumed a USD account and sized cent accounts 100x too large.
+// v1.08: value of a 1.0 price move for 1 lot in ACCOUNT currency, or 0 if it cannot be trusted right now.
+// Two independent sources must agree within 5 %: broker tick value and OrderCalcProfit. NEVER falls back to the
+// contract size (on a cent account that is 100x too small a value -> 100x too large a lot).
 double MoneyPerPricePerLot()
   {
    double tv = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE), ts = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   if(tv > 0 && ts > 0) return tv / ts;
-   return SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE);
+   if(!(tv > 0) || !(ts > 0)) return 0.0;
+   double a = tv / ts;
+   double px = SymbolInfoDouble(_Symbol, SYMBOL_BID), pr = 0;
+   if(px <= 0 || !OrderCalcProfit(ORDER_TYPE_BUY, _Symbol, 1.0, px, px + 1.0, pr) || !(pr > 0)) return 0.0;
+   if(MathAbs(pr - a) > 0.05 * MathMax(pr, a)) { static datetime w = 0; if(TimeCurrent() - w > 3600) { w = TimeCurrent(); PrintFormat("Williams: value check mismatch (tick %.6f vs calc %.6f) - no orders until they agree", a, pr); } return 0.0; }
+   return a;
   }
 double LotFor(double price)
   {
    double step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP), mn = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN), mx = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    double lot = InpFixedLot;
-   if(lot <= 0) lot = AccountInfoDouble(ACCOUNT_EQUITY) * InpLev / (price * MoneyPerPricePerLot());   // notional (account ccy) = InpLev x equity
+   double vpp = MoneyPerPricePerLot();
+   if(vpp <= 0 || price <= 0) return 0.0;                                  // v1.08: value not trustworthy -> no lot
+   if(lot <= 0) lot = AccountInfoDouble(ACCOUNT_EQUITY) * InpLev / (price * vpp);   // notional (account ccy) = InpLev x equity
    if(step <= 0) step = 0.01; lot = MathFloor(lot / step + 1e-9) * step;
    if(lot < mn) return 0.0; if(lot > mx) lot = mx; return NormalizeDouble(lot, 2);
   }

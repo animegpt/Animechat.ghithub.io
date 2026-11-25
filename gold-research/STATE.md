@@ -141,3 +141,10 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   10904); BTC unchanged +7.54 bp; order expiry supported (16:50 NY). v1.07: placement attempted only while the symbol's
   last quote is < 120 s old (removes ~14k "market closed" log lines); trading logic unchanged. Live spread logger
   running on the PC (BTCUSDc 6.40, XAUUSDc 0.221 at first row). Williams gold + BTC READY after a v1.07 compile.
+- 2026-11-25 LIVE: Combo v1.01 running on real cent account 458099794. User chose x3 then x4 (RiskPct 0.8, OnLev 6.0)
+  and removed the 25 % DD stop rule (user's decision; research MC limit was sized for ~0.2 / 1.5).
+  CRITICAL BUG found live (no fill, orders deleted by the local session within 2 min): GoldWilliams on XAUUSDc at
+  terminal start: tick value 0 -> fallback to contract size 1.0 (true 100 USC) -> lot 100x. FIX v1.08 (GoldWilliams +
+  Shadow template): no fallback ever; value = tick value AND OrderCalcProfit must agree within 5 % else no lot (retry
+  60 s); market path no longer burns the day; trade-session check (SymbolInfoSessionTrade) for placement retries.
+  Williams charts disabled live until v1.08 is compiled + tested. NOT compiled here.
