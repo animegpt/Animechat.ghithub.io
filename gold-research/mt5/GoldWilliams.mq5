@@ -5,6 +5,8 @@
 //| range, sell stop at Open - 0.6 x prev range; first touched wins, |
 //| one trade per day, exit at the day's close (16:58 NY).           |
 //| DEMO forward test first. Magic 770501. Rules are frozen.         |
+//| v1.06: retry order placement after the daily break (no fallback  |
+//| on "market closed"); orders expire at the exit time (server).   |
 //| v1.05: entries as OCO stop orders AT the levels (research fills  |
 //| at the level; market-on-touch slipped ~105 USD on BTC tester).   |
 //| v1.04: any symbol (BTCUSDc): weekend trading-day keys skipped as  |
@@ -15,7 +17,7 @@
 //| (missed 16:58 window, e.g. broker daily break). Logic unchanged.  |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.05"
+#property version   "1.06"
 #property description "Williams volatility breakout (#112): gold passed discovery/confirmation/vault; v1.04 also for BTCUSDc (#165/#166, forward test)."
 #property description "Demo first. Logs every trade to MQL5/Files/GoldWilliams_trades.csv"
 #include <Trade/Trade.mqh>
@@ -42,6 +44,8 @@ bool     tradedToday = false;
 bool     gStale = false;
 datetime gOrdersDay = 0;     // v1.05: day key for which the OCO stop orders are working
 datetime gPlaceTried = 0;    // v1.05: day key for which placement was attempted (once per day)
+datetime gNextTry = 0;       // v1.06: next retry time when the market was closed (daily break)
+datetime gClosedMsgDay = 0;
 ulong    pendClose[];
 // open trade bookkeeping
 ulong gTicket = 0; long gPosId = 0; int gSide = 0; double gLvl = 0, gEnt = 0, gVol = 0, gSpr = 0; datetime gEntT = 0; datetime gDayKey = 0;
@@ -203,6 +207,14 @@ void CloseExtraPosition()
      }
    if(extra != 0) { Print("Williams: both stops filled, closing the later position #", extra); SafeClose(extra); }
   }
+// v1.06: server time of today's exit (InpExitNYMin on the trading-day key's NY date), for order expiry
+datetime ExitServerTime()
+  {
+   MqlDateTime k; TimeToStruct(dayKey, k); k.hour = InpExitNYMin / 60; k.min = InpExitNYMin % 60; k.sec = 0;
+   datetime ny = StructToTime(k);                                  // NY local time
+   datetime utc = (datetime)((long)ny - (long)NYOffset((datetime)((long)ny + 5 * 3600)) * 3600);
+   return (datetime)((long)utc + (long)InpServerUTC * 3600);
+  }
 void PlaceDayOrders()
   {
    DeletePendings(); gOrdersDay = dayKey;
@@ -214,9 +226,19 @@ void PlaceDayOrders()
    double bl = NormalizeDouble(buyLvl + spr, _Digits), sl = NormalizeDouble(sellLvl, _Digits);   // buy stop triggers on ASK: +spread = BID at the level
    double lotB = LotFor(bl), lotS = LotFor(sl);
    if(lotB <= 0 || lotS <= 0) { Print("Williams: lot below minimum"); return; }
-   bool okB = (bl - ask > minDist) && trade.BuyStop(lotB, bl, _Symbol, 0, 0, ORDER_TIME_GTC, 0, "Williams#112 BS");
-   bool okS = (bid - sl > minDist) && trade.SellStop(lotS, sl, _Symbol, 0, 0, ORDER_TIME_GTC, 0, "Williams#112 SS");
-   PrintFormat("Williams day orders: buy stop %.2f %s | sell stop %.2f %s (open %.2f, prev range %.2f)", bl, okB ? "ok" : "NOT placed", sl, okS ? "ok" : "NOT placed", dOpen, prevRange);
+   long em = SymbolInfoInteger(_Symbol, SYMBOL_EXPIRATION_MODE); bool canExp = (em & SYMBOL_EXPIRATION_SPECIFIED) != 0;
+   ENUM_ORDER_TYPE_TIME tt = canExp ? ORDER_TIME_SPECIFIED : ORDER_TIME_GTC; datetime ex = canExp ? ExitServerTime() : 0;
+   if(canExp && ex <= TimeCurrent() + 60) { tt = ORDER_TIME_GTC; ex = 0; }
+   uint rcB = 0, rcS = 0;
+   bool okB = (bl - ask > minDist) && trade.BuyStop(lotB, bl, _Symbol, 0, 0, tt, ex, "Williams#112 BS"); if(!okB) rcB = trade.ResultRetcode();
+   bool okS = (bid - sl > minDist) && trade.SellStop(lotS, sl, _Symbol, 0, 0, tt, ex, "Williams#112 SS"); if(!okS) rcS = trade.ResultRetcode();
+   if((!okB || !okS) && (rcB == TRADE_RETCODE_MARKET_CLOSED || rcS == TRADE_RETCODE_MARKET_CLOSED))
+     {   // v1.06: daily break (gold 17:00-18:00 NY) -> retry every minute, no fallback
+      DeletePendings(); gOrdersDay = 0; gPlaceTried = 0; gNextTry = TimeCurrent() + 60;
+      if(gClosedMsgDay != dayKey) { gClosedMsgDay = dayKey; Print("Williams: market closed, will place the day orders when it reopens"); }
+      return;
+     }
+   PrintFormat("Williams day orders: buy stop %.2f %s | sell stop %.2f %s (open %.2f, prev range %.2f, expiry %s)", bl, okB ? "ok" : "NOT placed", sl, okS ? "ok" : "NOT placed", dOpen, prevRange, ex > 0 ? TimeToString(ex) : "GTC");
    if(!okB || !okS) { DeletePendings(); gOrdersDay = 0; Print("Williams: falling back to market-on-touch today"); }
   }
 
@@ -250,8 +272,9 @@ void OnTickLogic()
    if(tradedToday || dOpen <= 0 || exitWin) return;
    if(InpPendingEntry)
      {
-      if(gPlaceTried != dayKey) { gPlaceTried = dayKey; PlaceDayOrders(); }   // once per day; on failure/gap -> market-on-touch below
+      if(gPlaceTried != dayKey && TimeCurrent() >= gNextTry) { gPlaceTried = dayKey; PlaceDayOrders(); }   // on "market closed" PlaceDayOrders re-arms a retry
       if(gOrdersDay == dayKey) return;                                         // orders working; fills are picked up above
+      if(gPlaceTried != dayKey) return;                                        // v1.06: waiting for the market to reopen: never market-enter while closed
      }
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID), ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    int side = bid >= buyLvl ? 1 : (bid <= sellLvl ? -1 : 0);                  // research triggers on BID high/low

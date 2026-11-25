@@ -132,3 +132,8 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   other order cancelled on fill; both-filled -> later position closed; pendings deleted at the exit window / new day /
   restart. Applies to gold too. NOT compiled here. Known pre-existing gap: restart after a closed trade on the same day
   could allow a second trade that day.
+- 2026-11-25 Local v1.05 tester (USD, 1-min OHLC, 2024-01..2025-06): BTC pending slippage 15.7 vs 104.8 USD market,
+  net_bp +7.54 vs -4.85 (final 10275 vs 9804); gold pending +4.67 vs +3.77 bp. Gold issue: orders placed at 17:00 NY =
+  daily break -> "market closed" -> fallback on 247 days; 8 orders alive past exit on early-close holidays.
+  FIX v1.06: on MARKET_CLOSED retry placement every 60 s (no fallback, no market entry while closed); orders carry an
+  expiry = today's exit time (server) when the symbol allows ORDER_TIME_SPECIFIED. NOT compiled here.
