@@ -124,3 +124,11 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
 - GoldWilliams.mq5 v1.04: InpSkipWeekendKeys (24/7 symbols: weekend keys skipped, Monday uses Friday range, as research);
   no effect on gold. #167 pre-registered: BTCUSDc forward test, Magic 770503, InpLev 0.15, stop rules. NOT compiled here.
   Cumulative trials 350,301.
+- 2026-11-25 Local BTC tester (v1.04, BTCUSDc 2024-01..2025-06, 1-min OHLC): compile 0/0; weekend keys OK (0 Saturday
+  entries; Sunday >= 17:00 NY = Monday key); all exits 16:50-16:59 NY. Tester spread mean 31 USD (live snapshot 6.40 =
+  research); BUT mean entry slippage vs level 105 USD (~14 bp): market-on-touch entries. net_bp -4.85 vs signal +9.8.
+  FIX GoldWilliams v1.05: InpPendingEntry (default true) = OCO buy-stop/sell-stop placed at the levels once per day
+  (buy stop = level + spread, i.e. BID at level; gap beyond a level -> market as research; failure -> market-on-touch);
+  other order cancelled on fill; both-filled -> later position closed; pendings deleted at the exit window / new day /
+  restart. Applies to gold too. NOT compiled here. Known pre-existing gap: restart after a closed trade on the same day
+  could allow a second trade that day.

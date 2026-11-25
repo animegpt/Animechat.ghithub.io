@@ -5,6 +5,8 @@
 //| range, sell stop at Open - 0.6 x prev range; first touched wins, |
 //| one trade per day, exit at the day's close (16:58 NY).           |
 //| DEMO forward test first. Magic 770501. Rules are frozen.         |
+//| v1.05: entries as OCO stop orders AT the levels (research fills  |
+//| at the level; market-on-touch slipped ~105 USD on BTC tester).   |
 //| v1.04: any symbol (BTCUSDc): weekend trading-day keys skipped as  |
 //| in the research (Monday uses Friday range). No-op on gold.       |
 //| v1.03: lot + net_bp from tick value (correct on USC cent accts).  |
@@ -13,7 +15,7 @@
 //| (missed 16:58 window, e.g. broker daily break). Logic unchanged.  |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.04"
+#property version   "1.05"
 #property description "Williams volatility breakout (#112): gold passed discovery/confirmation/vault; v1.04 also for BTCUSDc (#165/#166, forward test)."
 #property description "Demo first. Logs every trade to MQL5/Files/GoldWilliams_trades.csv"
 #include <Trade/Trade.mqh>
@@ -25,6 +27,7 @@ input double InpLev        = 0.5;    // Notional as x equity (research portfolio
 input double InpFixedLot   = 0.0;    // Fixed lot (>0 overrides)
 input group "Technical"
 input int    InpExitNYMin  = 1010;   // Day-close exit from this NY minute (1010 = 16:50). v1.02: Exness sends no ticks 16:58-17:00 NY
+input bool   InpPendingEntry = true;  // v1.05: OCO buy-stop / sell-stop at the levels (= research fills). false = old market-on-touch
 input bool   InpSkipWeekendKeys = true; // v1.04: no trading on Sat/Sun trading-day keys; previous range = last weekday key (research). Gold: no effect
 input int    InpServerUTC  = 0;      // Broker server offset from UTC (Exness = 0)
 input long   InpMagic      = 770501; // Magic number
@@ -37,6 +40,8 @@ datetime dayKey = 0;          // NY date of the current trading day (17:00 NY st
 double   dOpen = 0, buyLvl = 0, sellLvl = 0, prevRange = 0;
 bool     tradedToday = false;
 bool     gStale = false;
+datetime gOrdersDay = 0;     // v1.05: day key for which the OCO stop orders are working
+datetime gPlaceTried = 0;    // v1.05: day key for which placement was attempted (once per day)
 ulong    pendClose[];
 // open trade bookkeeping
 ulong gTicket = 0; long gPosId = 0; int gSide = 0; double gLvl = 0, gEnt = 0, gVol = 0, gSpr = 0; datetime gEntT = 0; datetime gDayKey = 0;
@@ -162,6 +167,59 @@ void FinishIfClosed()
    LogTrade(xT, xPx, why, comm, swap, profit); gTicket = 0; gPosId = 0; gSide = 0;
   }
 
+
+//---- v1.05 pending-order helpers (OCO stop orders at the Williams levels)
+int CountPendings()
+  {
+   int c = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; i--) { ulong t = OrderGetTicket(i); if(t == 0) continue; if(OrderGetString(ORDER_SYMBOL) == _Symbol && OrderGetInteger(ORDER_MAGIC) == InpMagic) c++; }
+   return c;
+  }
+void DeletePendings()
+  {
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+     {
+      ulong t = OrderGetTicket(i); if(t == 0) continue;
+      if(OrderGetString(ORDER_SYMBOL) == _Symbol && OrderGetInteger(ORDER_MAGIC) == InpMagic && !trade.OrderDelete(t))
+         Print("Williams: pending delete failed #", t, " ", trade.ResultRetcodeDescription());
+     }
+  }
+int CountPositions()
+  {
+   int c = 0;
+   for(int k = PositionsTotal() - 1; k >= 0; k--) { ulong t = PositionGetTicket(k); if(t == 0) continue; if(PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagic) c++; }
+   return c;
+  }
+// both stops filled in one spike (rare): keep the earlier position, close the later one (research: one trade per day)
+void CloseExtraPosition()
+  {
+   ulong keep = 0, extra = 0; datetime tk = 0;
+   for(int k = PositionsTotal() - 1; k >= 0; k--)
+     {
+      ulong t = PositionGetTicket(k); if(t == 0) continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol || PositionGetInteger(POSITION_MAGIC) != InpMagic) continue;
+      datetime ot = (datetime)PositionGetInteger(POSITION_TIME_MSC);
+      if(keep == 0 || ot < tk) { if(keep != 0) extra = keep; keep = t; tk = ot; } else extra = t;
+     }
+   if(extra != 0) { Print("Williams: both stops filled, closing the later position #", extra); SafeClose(extra); }
+  }
+void PlaceDayOrders()
+  {
+   DeletePendings(); gOrdersDay = dayKey;
+   double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID), ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK), spr = ask - bid;
+   double pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT), minDist = (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * pt;
+   trade.SetExpertMagicNumber(InpMagic); trade.SetDeviationInPoints(InpDeviation);
+   // already beyond a level when the day's orders are placed (gap) -> research fills at the open: market order now
+   if(bid >= buyLvl || bid <= sellLvl) { gOrdersDay = 0; return; }       // handled by the market-on-touch path below
+   double bl = NormalizeDouble(buyLvl + spr, _Digits), sl = NormalizeDouble(sellLvl, _Digits);   // buy stop triggers on ASK: +spread = BID at the level
+   double lotB = LotFor(bl), lotS = LotFor(sl);
+   if(lotB <= 0 || lotS <= 0) { Print("Williams: lot below minimum"); return; }
+   bool okB = (bl - ask > minDist) && trade.BuyStop(lotB, bl, _Symbol, 0, 0, ORDER_TIME_GTC, 0, "Williams#112 BS");
+   bool okS = (bid - sl > minDist) && trade.SellStop(lotS, sl, _Symbol, 0, 0, ORDER_TIME_GTC, 0, "Williams#112 SS");
+   PrintFormat("Williams day orders: buy stop %.2f %s | sell stop %.2f %s (open %.2f, prev range %.2f)", bl, okB ? "ok" : "NOT placed", sl, okS ? "ok" : "NOT placed", dOpen, prevRange);
+   if(!okB || !okS) { DeletePendings(); gOrdersDay = 0; Print("Williams: falling back to market-on-touch today"); }
+  }
+
 void OnTickLogic()
   {
    RetryPendingCloses(); FinishIfClosed();
@@ -170,14 +228,31 @@ void OnTickLogic()
    if(key != dayKey) { dayKey = key; tradedToday = false; if(!ComputeLevels(nowUTC)) { dOpen = 0; } if(InpSkipWeekendKeys && IsWeekendKey(key)) tradedToday = true; }
    int nm = NYMinute(nowUTC);
    ulong tk;
+   bool exitWin = nm >= InpExitNYMin && nm < 17 * 60;
+   if(InpPendingEntry && (exitWin || (gOrdersDay != 0 && gOrdersDay != dayKey)) && CountPendings() > 0) { DeletePendings(); gOrdersDay = 0; }
    if(FindPos(tk))
      {
+      if(CountPendings() > 0) DeletePendings();                                // v1.05 OCO: one filled -> cancel the other
+      if(CountPositions() > 1) { CloseExtraPosition(); return; }
+      if(gTicket == 0 && PositionSelectByTicket(tk))                           // v1.05: a stop order filled -> bookkeeping
+        {
+         gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1;
+         gLvl = gSide == 1 ? buyLvl : sellLvl; gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME);
+         gEntT = (datetime)PositionGetInteger(POSITION_TIME); gSpr = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID); gDayKey = dayKey;
+         tradedToday = true;
+         PrintFormat("Williams %s %.2f lots filled @ %.2f (level %.2f)", gSide == 1 ? "BUY" : "SELL", gVol, gEnt, gLvl);
+        }
       datetime posKey = TradingDayKey(ToUTC((datetime)PositionGetInteger(POSITION_TIME)));
       if(posKey != dayKey) { gStale = true; SafeClose(tk); return; }           // v1.01 safety: never hold past the trading day
-      if(nm >= InpExitNYMin && nm < 17 * 60) SafeClose(tk);                    // day close
+      if(exitWin) SafeClose(tk);                                               // day close
       return;
      }
-   if(tradedToday || dOpen <= 0 || (nm >= InpExitNYMin && nm < 17 * 60)) return;
+   if(tradedToday || dOpen <= 0 || exitWin) return;
+   if(InpPendingEntry)
+     {
+      if(gPlaceTried != dayKey) { gPlaceTried = dayKey; PlaceDayOrders(); }   // once per day; on failure/gap -> market-on-touch below
+      if(gOrdersDay == dayKey) return;                                         // orders working; fills are picked up above
+     }
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID), ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    int side = bid >= buyLvl ? 1 : (bid <= sellLvl ? -1 : 0);                  // research triggers on BID high/low
    if(side == 0) return;
@@ -204,6 +279,7 @@ int OnInit()
                  AccountInfoString(ACCOUNT_CURRENCY), AccountInfoDouble(ACCOUNT_EQUITY), MoneyPerPricePerLot(), AccountInfoString(ACCOUNT_CURRENCY),
                  LotFor(px0), LotFor(px0) * MoneyPerPricePerLot() * px0, AccountInfoDouble(ACCOUNT_EQUITY) > 0 ? LotFor(px0) * MoneyPerPricePerLot() * px0 / AccountInfoDouble(ACCOUNT_EQUITY) : 0.0); }
    ulong tk; if(FindPos(tk) && PositionSelectByTicket(tk)) { gTicket = tk; gPosId = PositionGetInteger(POSITION_IDENTIFIER); gSide = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1; gEnt = PositionGetDouble(POSITION_PRICE_OPEN); gVol = PositionGetDouble(POSITION_VOLUME); gEntT = (datetime)PositionGetInteger(POSITION_TIME); gDayKey = TradingDayKey(ToUTC(gEntT)); tradedToday = true; }
+   if(InpPendingEntry && CountPendings() > 0 && !FindPos(tk)) DeletePendings();   // v1.05: restart -> re-place today's orders fresh (never adopt old ones)
    EventSetTimer(10); return INIT_SUCCEEDED;
   }
 void OnDeinit(const int reason) { EventKillTimer(); }
