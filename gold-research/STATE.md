@@ -156,3 +156,9 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
 - 2026-11-25 USER DECISION: accepts up to 60 % drawdown (experiment money, trusts the strategy). Combo v1.01 x4 live.
   User returns in ~1 week with a live-account update. Next session: read the weekly report (trades per robot, P&L,
   max DD, swap on Overnight = 0?, Sizing check lines, any stale/odd positions), then decide Williams v1.09 go-live size.
+- 2026-11-28 First live week (x4, profile Bots: Combo v1.01 0.8/6.0, Williams v1.08 gold 2.0 / BTC 0.6): balance
+  19,639 USC (-1.8 %): one Williams BTC loss (-360.73 USC), swap 0 (swap-free confirmed). Combo: no trades yet (ON skip
+  p 0.218; Thanksgiving). MT5 auto-restart after reboot worked (22:07). BUG: Williams gold placed no orders on Fri
+  2026-11-27: levels computed only once at the day-key change (17:00 NY = gold daily break, no bar of the new day yet)
+  -> dOpen 0 -> whole day lost (tester never runs the EA during the break, so it never showed). Likely affects most
+  live gold days. FIX v1.10 (GoldWilliams + Shadow template): retry ComputeLevels every 30 s until it succeeds.

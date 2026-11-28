@@ -5,6 +5,8 @@
 //| range, sell stop at Open - 0.6 x prev range; first touched wins, |
 //| one trade per day, exit at the day's close (16:58 NY).           |
 //| DEMO forward test first. Magic 770501. Rules are frozen.         |
+//| v1.10: day levels re-computed every 30 s until the new day's     |
+//| first bar exists (gold: day key starts 17:00 NY inside the break).|
 //| v1.09: day orders placed >= 5 min after the trade session opens  |
 //| (spread at the open is wide; buy stop = level + current spread). |
 //| v1.08 CRITICAL: no contract-size fallback for the lot (cent acct  |
@@ -24,7 +26,7 @@
 //| (missed 16:58 window, e.g. broker daily break). Logic unchanged.  |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.09"
+#property version   "1.10"
 #property description "Williams volatility breakout (#112): gold passed discovery/confirmation/vault; v1.04 also for BTCUSDc (#165/#166, forward test)."
 #property description "Demo first. Logs every trade to MQL5/Files/GoldWilliams_trades.csv"
 #include <Trade/Trade.mqh>
@@ -287,6 +289,11 @@ void OnTickLogic()
    int nm = NYMinute(nowUTC);
    ulong tk;
    bool exitWin = nm >= InpExitNYMin && nm < 17 * 60;
+   // v1.10: the day key starts at 17:00 NY; for gold that is inside the daily break, so today's first bar does not
+   // exist yet when the key changes and ComputeLevels fails. Retry until it succeeds (was: the whole day was lost).
+   { static datetime lastLv = 0;
+     if(dOpen <= 0 && !exitWin && !(InpSkipWeekendKeys && IsWeekendKey(dayKey)) && TimeCurrent() - lastLv >= 30)
+       { lastLv = TimeCurrent(); if(ComputeLevels(nowUTC)) PrintFormat("Williams levels ready: open %.2f, prev range %.2f", dOpen, prevRange); } }
    if(InpPendingEntry && (exitWin || (gOrdersDay != 0 && gOrdersDay != dayKey)) && CountPendings() > 0) { DeletePendings(); gOrdersDay = 0; }
    if(FindPos(tk))
      {

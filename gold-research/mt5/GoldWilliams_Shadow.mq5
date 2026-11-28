@@ -9,7 +9,7 @@
 //| Magic 770502. Run it INSTEAD of GoldWilliams (770501), not with. |
 //+------------------------------------------------------------------+
 #property copyright "gold-research"
-#property version   "1.08"
+#property version   "1.10"
 #property description "Williams #112 + SHADOW RF sizing (logged only, never applied). Research #149-#153: model = 'probable, not proven'."
 #property description "Logs: MQL5/Files/GoldWilliams_Shadow_trades.csv, _signals.csv, _bars.csv"
 #include <Trade/Trade.mqh>
@@ -839,6 +839,9 @@ void OnTickLogic()
    datetime key = TradingDayKey(nowUTC);
    if(key != dayKey) { dayKey = key; tradedToday = false; if(!ComputeLevels(nowUTC)) { dOpen = 0; } DumpBars(); }
    int nm = NYMinute(nowUTC);
+   // v1.10: day key starts 17:00 NY inside gold's daily break -> today's first bar may not exist yet; retry the levels
+   { static datetime lastLv = 0;
+     if(dOpen <= 0 && !(nm >= InpExitNYMin && nm < 17 * 60) && TimeCurrent() - lastLv >= 30) { lastLv = TimeCurrent(); ComputeLevels(nowUTC); } }
    ulong tk;
    if(FindPos(tk))
      {
