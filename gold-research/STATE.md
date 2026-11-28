@@ -162,3 +162,6 @@ If the conversation ends: "اقرأ STATE.md وكمّل".
   2026-11-27: levels computed only once at the day-key change (17:00 NY = gold daily break, no bar of the new day yet)
   -> dOpen 0 -> whole day lost (tester never runs the EA during the break, so it never showed). Likely affects most
   live gold days. FIX v1.10 (GoldWilliams + Shadow template): retry ComputeLevels every 30 s until it succeeds.
+- 2026-11-28 00:48 UTC LIVE: both Williams charts switched to v1.10 (gold 2.0 / BTC 0.6, x4). Compile 0/0; tester 2024-03:
+  BTC identical to v1.08; gold same 14 entries, 8 trades slightly better (v1.09 5-min delay). Next live check after the
+  Sunday open: "Williams levels ready" ~18:00 NY, "Williams day orders" ~18:05 NY, lot_guard (gold ~0.107, BTC ~0.197).
